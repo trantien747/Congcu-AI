@@ -1186,12 +1186,18 @@ async function processFile(file,t){
     if(ext==='txt') text=await readTxt(file);
     else if(ext==='pdf') text=await readPdf(file);
     else text=await readDocx(file);
-    if(!text.trim()) throw new Error('Không đọc được nội dung. Thử chuyển sang TXT.');
-    toolTexts[t]=text;
+    toolTexts[t]=text||'';
+    // Lưu file object để upload lên Gemini Files API
+    toolFiles[t]=file;
     // KHÔNG điền vào textarea — để công chức tự nhập yêu cầu
-    setES(t,'done','✅ Đã đọc '+text.length.toLocaleString()+' ký tự · File sẵn sàng làm tài liệu tham chiếu');
-    checkEnable(t);toast('✅ Đã đọc file — hãy nhập yêu cầu bên dưới','success');
-  }catch(e){setES(t,'err','❌ '+e.message);toast('❌ '+e.message,'error')}
+    setES(t,'done','✅ File sẵn sàng · Gemini sẽ đọc toàn bộ file khi xử lý');
+    checkEnable(t);toast('✅ File sẵn sàng — nhập yêu cầu rồi bấm Xử lý!','success');
+  }catch(e){
+    // Nếu không đọc được text vẫn OK — Gemini sẽ tự đọc qua Files API
+    toolFiles[t]=file;
+    setES(t,'done','✅ File sẵn sàng · '+fmtSize(file.size));
+    checkEnable(t);toast('✅ File sẵn sàng!','success');
+  }
 }
 
 function clearFile(t){
@@ -1200,7 +1206,10 @@ function clearFile(t){
   document.getElementById('tx-'+t).value='';
   document.getElementById('tx-'+t).classList.remove('has-content');
   document.getElementById('es-'+t).className='extract-status';
-  toolTexts[t]='';checkEnable(t);
+  toolTexts[t]='';
+  toolFiles[t]=null;
+  delete geminiFileCache[t];
+  checkEnable(t);
 }
 
 function setES(t,type,msg){
@@ -1254,144 +1263,147 @@ async function checkUsage(){
 }
 let currentTool='';
 
-// ── GEMINI ──
-async function gemini(prompt){
+// ── GEMINI FILES API — UPLOAD FILE ──
+let geminiFileCache={};// cache uri theo tên file tránh upload lại
+async function uploadToGemini(file){
+  const key=localStorage.getItem('geminiApiKey');
+  if(!key) throw new Error('Chưa có API Key');
+  if(geminiFileCache[file.name+file.size]) return geminiFileCache[file.name+file.size];
+  // Bước 1: Khởi tạo upload session
+  const mime=file.type||'application/octet-stream';
+  const startRes=await fetch(
+    `https://generativelanguage.googleapis.com/upload/v1beta/files?uploadType=resumable&key=${key}`,
+    {method:'POST',
+     headers:{'Content-Type':'application/json','X-Goog-Upload-Protocol':'resumable','X-Goog-Upload-Command':'start','X-Goog-Upload-Header-Content-Length':file.size,'X-Goog-Upload-Header-Content-Type':mime},
+     body:JSON.stringify({file:{display_name:file.name}})
+    }
+  );
+  if(!startRes.ok) throw new Error('Không khởi tạo được upload');
+  const uploadUrl=startRes.headers.get('X-Goog-Upload-URL');
+  if(!uploadUrl) throw new Error('Không lấy được upload URL');
+  // Bước 2: Upload file
+  const uploadRes=await fetch(uploadUrl,{
+    method:'POST',
+    headers:{'Content-Length':file.size,'X-Goog-Upload-Offset':'0','X-Goog-Upload-Command':'upload, finalize'},
+    body:file
+  });
+  if(!uploadRes.ok) throw new Error('Upload file thất bại');
+  const fileData=await uploadRes.json();
+  const result={uri:fileData.file.uri,mimeType:mime};
+  geminiFileCache[file.name+file.size]=result;
+  return result;
+}
+
+// ── GEMINI API — HỖ TRỢ FILE URI ──
+async function gemini(prompt, fileUri, mimeType){
   const key=localStorage.getItem('geminiApiKey');
   if(!key){toast('⚠️ Chưa nhập API Key → Cài đặt','error');showPage('settings');return null}
-  const model=localStorage.getItem('geminiModel')||'gemini-2.0-flash';
+  const model=localStorage.getItem('geminiModel')||'gemini-2.5-flash';
   const SYS=`Bạn là trợ lý AI chuyên nghiệp hỗ trợ công chức hành chính tại UBND xã Krông Búk, tỉnh Đắk Lắk.
-
-═══════════════════════════════════════════
-KIẾN THỨC BẮT BUỘC — ĐỌC KỸ TRƯỚC KHI SOẠN BẤT KỲ VĂN BẢN NÀO
-═══════════════════════════════════════════
-
-## 1. MÔ HÌNH CHÍNH QUYỀN ĐỊA PHƯƠNG HIỆN HÀNH
-Việt Nam hiện thực hiện mô hình chính quyền địa phương 2 CẤP: TỈNH và XÃ.
-❌ CẤP HUYỆN ĐÃ BỊ BÃI BỎ HOÀN TOÀN.
-❌ TUYỆT ĐỐI KHÔNG dùng: "UBND huyện", "Phòng ban huyện", "HĐND huyện", "Chi cục thuộc huyện", "Huyện ủy" hay bất kỳ cụm từ nào liên quan đến cấp huyện.
-
-## 2. CƠ CẤU TỔ CHỨC UBND XÃ KRÔNG BÚK (theo Nghị định 150/2025/NĐ-CP)
-
-### A. CÁC PHÒNG CHUYÊN MÔN THUỘC UBND XÃ (3 phòng):
-1. Văn phòng HĐND và UBND xã
-   - Chức năng: Tham mưu giúp việc chung cho HĐND và UBND, phụ trách lĩnh vực văn phòng, tư pháp, đối ngoại, chương trình công tác
-   - Ký hiệu văn bản: VP
-2. Phòng Kinh tế
-   - Chức năng: Quản lý nhà nước về kinh tế, tài chính, nông-lâm-ngư nghiệp, khoa học công nghệ và đổi mới sáng tạo
-   - Ký hiệu văn bản: PKT
-3. Phòng Văn hóa - Xã hội
-   - Chức năng: Phụ trách y tế, giáo dục, văn hóa, thể thao, lao động - thương binh và xã hội, phúc lợi
-   - Ký hiệu văn bản: PVHXH
-
-### B. CÁC CƠ QUAN KHÁC THUỘC UBND XÃ:
-- Trung tâm Phục vụ hành chính công cấp xã: Tiếp nhận và giải quyết thủ tục hành chính, dịch vụ công cho người dân
-
-### C. CƠ QUAN DÂN CỬ:
-- Hội đồng nhân dân (HĐND) xã Krông Búk
-  + Ban Pháp chế: Phụ trách thi hành pháp luật, an ninh trật tự
-  + Ban Kinh tế - Xã hội: Phụ trách kinh tế, ngân sách, văn hóa xã hội
-- Ủy ban nhân dân (UBND) xã Krông Búk: gồm Chủ tịch, Phó Chủ tịch và các Ủy viên UBND
-
-### D. ĐƠN VỊ SỰ NGHIỆP VÀ KHỐI ĐẶC THÙ:
-- Trạm Y tế xã Krông Búk
-- Trường Mầm non, Trường Tiểu học, Trường THCS trên địa bàn xã
-- Công an xã Krông Búk
-- Ban Chỉ huy Quân sự xã Krông Búk
-
-### E. NHỮNG GÌ KHÔNG CÒN TỒN TẠI TẠI CẤP XÃ:
-❌ Không còn "công chức Địa chính" độc lập — đã thuộc Phòng Kinh tế
-❌ Không còn "công chức Tư pháp - Hộ tịch" độc lập — đã thuộc Văn phòng HĐND-UBND
-❌ Không còn "công chức Văn hóa - Xã hội" độc lập — đã thuộc Phòng VH-XH
-❌ Không còn chức danh "Trưởng/Phó công chức chuyên môn" riêng lẻ theo kiểu cũ
-
-## 3. CÁC SỞ NGÀNH CẤP TỈNH ĐẮK LẮK (sau khi sáp nhập — cơ cấu mới nhất)
-Khi soạn văn bản gửi lên cấp trên, CHỈ dùng tên các Sở/cơ quan sau:
-
-### KHỐI TỔNG HỢP & QUẢN TRỊ NỘI BỘ:
-| Tên cơ quan | Lĩnh vực phụ trách |
-|---|---|
-| Văn phòng UBND tỉnh | Tham mưu tổng hợp, phục vụ chỉ đạo điều hành của UBND tỉnh và Chủ tịch UBND tỉnh; quản lý Công báo và Cổng thông tin điện tử tỉnh |
-| Sở Nội vụ | Tổ chức bộ máy, biên chế công chức, vị trí việc làm; CCHC; quản lý CBCCVC; thi đua-khen thưởng; địa giới hành chính |
-| Sở Tư pháp | Xây dựng và thi hành pháp luật; kiểm tra VBQPPL; PBGDPL; quản lý hộ tịch, quốc tịch, công chứng, luật sư, giám định tư pháp |
-| Thanh tra tỉnh | Thanh tra hành chính và chuyên ngành; giải quyết khiếu nại tố cáo; phòng chống tham nhũng, lãng phí, tiêu cực |
-
-### KHỐI KINH TẾ, ĐẦU TƯ & HẠ TẦNG:
-| Tên cơ quan | Lĩnh vực phụ trách |
-|---|---|
-| Sở Tài chính | Tài chính, ngân sách nhà nước, tài sản công, kế hoạch đầu tư phát triển; quản lý giá và dịch vụ tài chính |
-| Sở Công Thương | Công nghiệp (cơ khí, luyện kim, hóa chất, CN hỗ trợ); năng lượng (điện lực, năng lượng tái tạo); thương mại nội địa, xuất nhập khẩu, quản lý thị trường |
-| Sở Nông nghiệp và Môi trường | Nông nghiệp, lâm nghiệp, diêm nghiệp, thủy sản, thủy lợi, phát triển nông thôn; ĐẤT ĐAI, tài nguyên nước, khoáng sản, môi trường, khí tượng thủy văn, biến đổi khí hậu |
-| Sở Xây dựng | Quy hoạch xây dựng, kiến trúc; đầu tư xây dựng; phát triển đô thị, hạ tầng kỹ thuật đô thị; nhà ở, thị trường bất động sản, vật liệu xây dựng |
-| Sở Khoa học và Công nghệ | Nghiên cứu KH, phát triển công nghệ; sở hữu trí tuệ; tiêu chuẩn đo lường chất lượng; an toàn bức xạ và hạt nhân |
-
-### KHỐI VĂN HÓA, XÃ HỘI & ĐẶC THÙ:
-| Tên cơ quan | Lĩnh vực phụ trách |
-|---|---|
-| Sở Giáo dục và Đào tạo | Mục tiêu, chương trình giáo dục; mạng lưới trường lớp; thi cử, văn bằng; quản lý nhà giáo và CBQL giáo dục từ mầm non đến phổ thông |
-| Sở Y tế | Y tế dự phòng, khám chữa bệnh, phục hồi chức năng; y học cổ truyền; thuốc, mỹ phẩm; an toàn thực phẩm; dân số và KHHGĐ |
-| Sở Văn hóa, Thể thao và Du lịch | Văn hóa, nghệ thuật, di sản văn hóa; thể dục thể thao; xúc tiến và quản lý du lịch, lưu trú |
-| Sở Dân tộc và Tôn giáo | Chính sách dân tộc, bình đẳng giữa các dân tộc; quản lý hoạt động tín ngưỡng, tôn giáo và cơ sở tôn giáo hợp pháp |
-
-### LƯU Ý QUAN TRỌNG VỀ SÁP NHẬP:
-❌ KHÔNG CÒN "Sở Tài nguyên và Môi trường" — đã sáp nhập vào "Sở Nông nghiệp và Môi trường"
-❌ KHÔNG CÒN "Sở Kế hoạch và Đầu tư" — chức năng đã chuyển về "Sở Tài chính"
-❌ KHÔNG CÒN "Sở Lao động - Thương binh và Xã hội" độc lập — chức năng đã tích hợp vào các sở liên quan
-✅ "Sở Nông nghiệp và Môi trường" phụ trách CẢ đất đai lẫn môi trường (không phải Sở TN&MT nữa)
-
-## 4. THỂ THỨC VĂN BẢN HÀNH CHÍNH (theo Nghị định 30/2020/NĐ-CP)
-- Tên cơ quan ban hành: UBND XÃ KRÔNG BÚK
-- Tỉnh: TỈNH ĐẮK LẮK (không có cấp huyện ở giữa)
-- Số hiệu văn bản: [số thứ tự]/[năm]-UBND (VD: 15/2025-UBND)
-- Địa danh ký văn bản: Krông Búk, ngày ... tháng ... năm ...
-- Nơi nhận: Chỉ ghi cơ quan cấp TỈNH hoặc cơ quan ngang cấp XÃ, KHÔNG ghi cơ quan huyện
-- Chữ ký: [Chức vụ], [Họ và tên] — để trống để công chức tự điền
-
-## 5. QUY TẮC BẮT BUỘC KHI SOẠN VĂN BẢN
-✅ Luôn dùng: "UBND xã Krông Búk", "tỉnh Đắk Lắk"
-✅ Gửi cấp trên: Chỉ gửi thẳng lên Sở/ngành tỉnh hoặc UBND tỉnh
-✅ Các phòng chuyên môn ký là: Trưởng phòng [tên phòng] — để trống tên người ký
-❌ KHÔNG BAO GIỜ viết: "huyện", "quận", "thị xã" trong văn bản hành chính
-❌ KHÔNG BAO GIỜ bịa tên lãnh đạo — để trống hoặc ghi [Họ và tên]
-❌ KHÔNG dùng tên Sở cũ trước sáp nhập (VD: "Sở Tài nguyên và Môi trường" đã sáp nhập vào "Sở Nông nghiệp và Môi trường")
-
-Trả lời bằng tiếng Việt, chuyên nghiệp, chuẩn xác. Không bịa thông tin.`;
+Việt Nam hiện thực hiện chính quyền địa phương 2 CẤP: TỈNH và XÃ. ❌ CẤP HUYỆN ĐÃ BỊ BÃI BỎ HOÀN TOÀN.
+Cơ cấu xã: Văn phòng HĐND-UBND · Phòng Kinh tế · Phòng VH-XH · TT Phục vụ HC công.
+Sở ngành tỉnh: Sở Nội vụ · Sở Tư pháp · Sở Tài chính · Sở Công Thương · Sở Nông nghiệp và Môi trường (gồm cả đất đai) · Sở Xây dựng · Sở KH&CN · Sở GD&ĐT · Sở Y tế · Sở VH,TT&DL · Sở Dân tộc và Tôn giáo · Thanh tra tỉnh · VP UBND tỉnh.
+❌ Không còn: Sở TN&MT · Sở KH&ĐT · Sở LĐTBXH độc lập.
+❌ Không bao giờ viết "huyện" trong văn bản. ❌ Không bịa tên lãnh đạo.
+Trả lời tiếng Việt, chuyên nghiệp, chuẩn xác.`;
+  const parts=[];
+  if(fileUri) parts.push({file_data:{mime_type:mimeType||'application/pdf',file_uri:fileUri}});
+  parts.push({text:prompt});
   const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,{
     method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({system_instruction:{parts:[{text:SYS}]},contents:[{parts:[{text:prompt}]}]})
+    body:JSON.stringify({system_instruction:{parts:[{text:SYS}]},contents:[{parts}]})
   });
   if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Lỗi API')}
   const d=await r.json();return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
 }
 
 // ── RUN ──
+// Lưu file object để upload lên Gemini
+const toolFiles={};
+
 async function run(t){
   currentTool=t;
   if(!await checkUsage()) return;
   const req=(document.getElementById('tx-'+t)?.value||'').trim();
   if(!req){toast('⚠️ Vui lòng nhập yêu cầu','error');return}
-  const fileContent=toolTexts[t]||'';
-  const context=fileContent?`\n\n[TÀI LIỆU ĐÍNH KÈM]\n---\n${fileContent.slice(0,8000)}${fileContent.length>8000?'\n...(còn tiếp)':''}\n---`:'';
-  const sel=id=>document.getElementById(id)?.value||'';
-  const tn={'cong-van':'Công văn','to-trinh':'Tờ trình','quyet-dinh':'Quyết định','thong-bao':'Thông báo','bao-cao':'Báo cáo','ke-hoach':'Kế hoạch','bien-ban':'Biên bản'};
-  const rm={full:'toàn diện (chính tả, thể thức NĐ30, nội dung)',spelling:'chính tả',format:'thể thức NĐ30',content:'nội dung câu từ'};
-  const sm={short:'3-5 điểm',medium:'~1 trang A4',detailed:'chi tiết đầy đủ'};
-  const cm={'hanh-chinh':'văn bản hành chính','bao-cao':'báo cáo','kien-nghi':'kiến nghị'};
-  const tr={'vi-en':'Việt→Anh','en-vi':'Anh→Việt'};
-  const P={
-    review:`Rà soát ${rm[sel('sel-review')]||'toàn diện'} văn bản sau. Chỉ từng lỗi, vị trí, đề xuất sửa. Nhận xét tổng thể:${context}\n\nYêu cầu thêm của công chức: ${req}`,
-    draft:`Soạn ${tn[sel('sel-draft')]||'văn bản'} của UBND xã Krông Búk, tỉnh Đắk Lắk theo Nghị định 30/2020.${context}\n\nYêu cầu: ${req}`,
-    summary:`Tóm tắt ${sm[sel('sel-summary')]||'3-5 điểm'}.${context}\n\nYêu cầu: ${req}`,
-    legal:`Tra cứu căn cứ pháp lý (luật, nghị định, thông tư).${context}\n\nVấn đề cần tra cứu: ${req}`,
-    procedure:`Trả lời về thủ tục hành chính cấp xã. Nêu: hồ sơ, trình tự, thời gian, lệ phí.${context}\n\nCâu hỏi: ${req}`,
-    convert:`Chuyển sang ${cm[sel('sel-convert')]||'văn bản hành chính'} của UBND xã Krông Búk, tỉnh Đắk Lắk.${context}\n\nNội dung cần chuyển: ${req}`,
-    translate:`Dịch ${tr[sel('sel-translate')]||'sang tiếng Anh'}, phong cách trang trọng.${context}\n\nNội dung cần dịch: ${req}`,
-    meeting:`Soạn biên bản họp UBND xã Krông Búk, tỉnh Đắk Lắk. Cần đầy đủ: thành phần, nội dung, kết luận, phân công, ký xác nhận.${context}\n\nGhi chú họp: ${req}`
-  };
+
   const rb=document.getElementById('rb-'+t),rt=document.getElementById('rt-'+t);
   rb.classList.add('show');
   rt.innerHTML='<div class="loading-ai"><div class="spin-lg"></div> AI đang xử lý...</div>';
-  try{const res=await gemini(P[t]);if(res){rt.textContent=res;toast('✅ Hoàn thành!','success')}}
-  catch(e){rt.textContent='❌ Lỗi: '+e.message;toast('❌ '+e.message,'error')}
+
+  // Upload file lên Gemini nếu có
+  let fileUri=null,fileMime=null;
+  if(toolFiles[t]){
+    rt.innerHTML='<div class="loading-ai"><div class="spin-lg"></div> Đang upload file lên Gemini...</div>';
+    try{
+      const uploaded=await uploadToGemini(toolFiles[t]);
+      fileUri=uploaded.uri;
+      fileMime=uploaded.mimeType;
+      toast('📤 Đã upload file — AI đang đọc...','success');
+    }catch(e){
+      toast('⚠️ Không upload được file, dùng text thay thế','error');
+    }
+    rt.innerHTML='<div class="loading-ai"><div class="spin-lg"></div> AI đang đọc và xử lý...</div>';
+  }
+
+  const sel=id=>document.getElementById(id)?.value||'';
+  const tn={'cong-van':'Công văn','to-trinh':'Tờ trình','quyet-dinh':'Quyết định','thong-bao':'Thông báo','bao-cao':'Báo cáo','ke-hoach':'Kế hoạch','bien-ban':'Biên bản'};
+  const sm={short:'3-5 điểm ngắn gọn',medium:'khoảng 1 trang A4',detailed:'chi tiết đầy đủ'};
+  const cm={'hanh-chinh':'văn bản hành chính','bao-cao':'báo cáo tình hình','kien-nghi':'kiến nghị chính thức'};
+  const tr={'vi-en':'từ tiếng Việt sang tiếng Anh','en-vi':'từ tiếng Anh sang tiếng Việt'};
+
+  // Nếu không có file URI, dùng text fallback
+  const ctx=(!fileUri&&toolTexts[t])?`\n\n[NỘI DUNG VĂN BẢN]\n---\n${toolTexts[t].slice(0,10000)}\n---`:'';
+
+  const REVIEW_PROMPT=`Bạn là chuyên gia rà soát văn bản hành chính Việt Nam. Hãy đọc kỹ văn bản ${fileUri?'đính kèm':'sau'} và rà soát theo các tiêu chí sau:
+
+**1. LỖI CHÍNH TẢ & DÙNG TỪ**
+- Phát hiện các từ viết sai chính tả
+- Chỉ ra các từ dùng không đúng nghĩa, không phù hợp văn phong hành chính
+- Gợi ý sửa cụ thể (từ sai → từ đúng)
+
+**2. NGỮ PHÁP & CÂU VĂN**
+- Câu văn lủng củng, khó hiểu, thiếu chủ ngữ/vị ngữ
+- Dùng câu quá dài hoặc quá phức tạp
+- Lặp từ, lặp ý không cần thiết
+- Gợi ý viết lại cho rõ ràng hơn
+
+**3. NỘI DUNG & LOGIC**
+- Các điểm mâu thuẫn nhau trong văn bản
+- Nội dung không nhất quán hoặc thiếu logic
+- Thông tin thiếu, cần bổ sung
+- Nội dung không phù hợp với thực tế hoặc quy định
+
+**4. THỂ THỨC VĂN BẢN (theo Nghị định 30/2020)**
+- Kiểm tra tiêu đề, số hiệu, ngày tháng
+- Kiểm tra cơ quan ban hành có đúng không (lưu ý không còn cấp huyện)
+- Kiểm tra phần ký tên, nơi nhận
+
+**CÁCH TRÌNH BÀY KẾT QUẢ:**
+Với MỖI LỖI tìm được, hãy ghi rõ:
+→ Vị trí: [trích dẫn ngắn đoạn có lỗi]
+→ Vấn đề: [giải thích lỗi là gì]
+→ Đề xuất sửa: [cách viết đúng]
+
+Cuối cùng đưa ra **NHẬN XÉT TỔNG THỂ** ngắn gọn về chất lượng văn bản.
+
+Yêu cầu thêm: ${req}${ctx}`;
+
+  const P={
+    review: REVIEW_PROMPT,
+    draft:`Soạn ${tn[sel('sel-draft')]||'văn bản'} của UBND xã Krông Búk, tỉnh Đắk Lắk theo đúng thể thức Nghị định 30/2020.${fileUri?'\n\nFile tham chiếu đính kèm.':ctx}\n\nYêu cầu: ${req}`,
+    summary:`Tóm tắt ${sm[sel('sel-summary')]||'3-5 điểm'} nội dung${fileUri?' văn bản đính kèm':''}.${ctx}\n\nYêu cầu: ${req}`,
+    legal:`Tra cứu căn cứ pháp lý (luật, nghị định, thông tư) liên quan.${fileUri?'\nVăn bản đính kèm.':ctx}\n\nVấn đề: ${req}`,
+    procedure:`Trả lời về thủ tục hành chính cấp xã. Nêu: hồ sơ, trình tự, thời gian, lệ phí.${ctx}\n\nCâu hỏi: ${req}`,
+    convert:`Chuyển thành ${cm[sel('sel-convert')]||'văn bản hành chính'} của UBND xã Krông Búk, tỉnh Đắk Lắk.${fileUri?'\nFile đính kèm.':ctx}\n\nNội dung: ${req}`,
+    translate:`Dịch ${tr[sel('sel-translate')]||'sang tiếng Anh'}, giữ phong cách trang trọng.${fileUri?'\nFile đính kèm.':ctx}\n\nNội dung: ${req}`,
+    meeting:`Soạn biên bản họp chính thức của UBND xã Krông Búk, tỉnh Đắk Lắk. Cần đầy đủ: thành phần, nội dung, kết luận, phân công, ký xác nhận.${fileUri?'\nFile ghi chú đính kèm.':ctx}\n\nGhi chú: ${req}`
+  };
+
+  try{
+    const res=await gemini(P[t], fileUri, fileMime);
+    if(res){rt.textContent=res;toast('✅ Hoàn thành!','success')}
+  }catch(e){rt.textContent='❌ Lỗi: '+e.message;toast('❌ '+e.message,'error')}
 }
 
 // ── EXPORT ──
