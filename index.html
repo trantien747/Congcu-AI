@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trợ Lý AI — Công chức cấp xã</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/docx/8.5.0/docx.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root{
+  --bg:#0a0e1a;
+  --bg2:#0f1520;
+  --bg3:#151c2e;
+  --bg4:#1a2236;
+  --bg5:#1f2940;
+  --border:#ffffff0f;
+  --border2:#ffffff18;
+  --text:#e8eaf0;
+  --muted:#6b7a99;
+  --muted2:#4a5568;
+  --red:#e53e3e;
+  --red2:#c53030;
+  --blue:#3b82f6;
+  --teal:#06b6d4;
+  --green:#10b981;
+  --purple:#8b5cf6;
+  --gold:#f59e0b;
+  --orange:#f97316;
+  --white:#fff;
+  --sidebar:260px;
+  --header:56px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Be Vietnam Pro',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:var(--sidebar);
+  background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;z-index:200;
+  transition:transform .3s;
+}
+.sb-brand{
+  padding:18px 16px 14px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.sb-logo{
+  width:44px;height:44px;border-radius:12px;
+  background:linear-gradient(135deg,#c53030,#e53e3e);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;flex-shrink:0;
+  box-shadow:0 0 20px rgba(229,62,62,.3);
+}
+.sb-brand-text{}
+.sb-title{font-size:13px;font-weight:800;color:var(--white);letter-spacing:.3px;line-height:1.2}
+.sb-sub{font-size:10px;color:var(--muted);margin-top:2px}
+
+.sb-nav{flex:1;padding:12px 8px;overflow-y:auto}
+.sb-section{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted2);padding:12px 8px 6px}
+.sb-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 10px;border-radius:10px;cursor:pointer;
+  font-size:13px;font-weight:500;color:var(--muted);
+  transition:all .18s;margin-bottom:2px;
+  border:none;background:none;width:100%;text-align:left;
+  font-family:'Be Vietnam Pro',sans-serif;
+}
+.sb-item:hover{background:var(--bg4);color:var(--text)}
+.sb-item.active{background:rgba(59,130,246,.15);color:var(--blue);font-weight:600}
+.sb-item.active .si-icon{color:var(--blue)}
+.si-icon{font-size:16px;flex-shrink:0;width:20px;text-align:center}
+.sb-divider{height:1px;background:var(--border);margin:8px 8px}
+
+.sb-footer{padding:12px;border-top:1px solid var(--border)}
+.sb-user-card{
+  background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);
+  border-radius:12px;padding:12px;margin-bottom:8px;
+}
+.suc-name{font-size:13px;font-weight:700;color:var(--gold);display:flex;align-items:center;gap:6px}
+.suc-role{font-size:11px;color:var(--muted);margin-top:3px}
+.suc-phone{font-size:11px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:4px}
+.sb-logout{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 10px;border-radius:8px;cursor:pointer;
+  font-size:12px;color:var(--muted);background:none;border:none;
+  width:100%;font-family:'Be Vietnam Pro',sans-serif;transition:all .18s;
+}
+.sb-logout:hover{background:rgba(229,62,62,.1);color:var(--red)}
+
+/* ── HEADER ── */
+.header{
+  position:fixed;left:var(--sidebar);right:0;top:0;height:var(--header);
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:16px;
+  z-index:100;
+}
+.header-hamburger{display:none;background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;padding:4px}
+.header-title{font-size:15px;font-weight:700;color:var(--white)}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.hbtn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:8px;font-size:12px;font-weight:600;
+  cursor:pointer;border:none;font-family:'Be Vietnam Pro',sans-serif;
+  transition:all .18s;
+}
+.hbtn-outline{background:transparent;border:1px solid var(--border2);color:var(--muted)}
+.hbtn-outline:hover{border-color:var(--blue);color:var(--blue)}
+.hbtn-primary{background:var(--blue);color:#fff}
+.hbtn-primary:hover{background:#2563eb}
+.hbtn-red{background:rgba(229,62,62,.15);border:1px solid rgba(229,62,62,.3);color:var(--red)}
+.hbtn-red:hover{background:rgba(229,62,62,.25)}
+.usage-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg4);border:1px solid var(--border2);
+  border-radius:20px;padding:5px 12px;font-size:11px;color:var(--muted);
+}
+.usage-bar{width:60px;height:4px;background:var(--bg5);border-radius:2px;overflow:hidden}
+.usage-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--teal),var(--blue));transition:width .5s}
+.usage-num{font-weight:700;color:var(--text)}
+
+/* ── MAIN CONTENT ── */
+.content{
+  margin-left:var(--sidebar);
+  padding-top:var(--header);
+  min-height:100vh;
+}
+.page{display:none;padding:24px}.page.active{display:block}
+
+/* ── DASHBOARD HERO ── */
+.dash-hero{
+  background:linear-gradient(135deg,#c53030 0%,#e53e3e 40%,#b91c1c 100%);
+  border-radius:16px;padding:24px 28px;margin-bottom:20px;
+  display:flex;align-items:center;gap:20px;
+  position:relative;overflow:hidden;
+}
+.dash-hero::before{
+  content:'';position:absolute;right:-20px;top:-20px;
+  width:200px;height:200px;border-radius:50%;
+  background:rgba(255,255,255,.05);
+}
+.dash-hero::after{
+  content:'';position:absolute;right:60px;bottom:-40px;
+  width:150px;height:150px;border-radius:50%;
+  background:rgba(255,255,255,.04);
+}
+.dh-logo{
+  width:64px;height:64px;border-radius:50%;
+  background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;flex-shrink:0;
+}
+.dh-text{position:relative;z-index:1}
+.dh-title{font-size:20px;font-weight:800;color:#fff;margin-bottom:4px}
+.dh-sub{font-size:13px;color:rgba(255,255,255,.7);margin-bottom:6px}
+.dh-quote{font-size:12px;color:rgba(255,255,255,.55);font-style:italic}
+
+/* ── STAT CARDS ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-card{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:14px;padding:18px 20px;
+  border-top:3px solid transparent;
+  transition:transform .2s;cursor:default;
+}
+.stat-card:hover{transform:translateY(-2px)}
+.stat-card.blue{border-top-color:var(--blue)}
+.stat-card.gold{border-top-color:var(--gold)}
+.stat-card.purple{border-top-color:var(--purple)}
+.stat-card.green{border-top-color:var(--green)}
+.stat-card.red{border-top-color:var(--red)}
+.sc-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.sc-num{
+  font-family:'Rajdhani',sans-serif;font-size:48px;font-weight:700;
+  line-height:1;margin-bottom:6px;
+}
+.sc-num.blue{color:var(--blue)}
+.sc-num.gold{color:var(--gold)}
+.sc-num.purple{color:var(--purple)}
+.sc-num.green{color:var(--green)}
+.sc-num.red{color:var(--red)}
+.sc-desc{font-size:11px;color:var(--muted)}
+
+/* ── SECTION BOXES ── */
+.box{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:14px;overflow:hidden;margin-bottom:16px;
+}
+.box-head{
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.box-head-title{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.box-body{padding:20px}
+.empty-state{color:var(--muted2);font-size:13px;padding:12px 0}
+
+/* ── TOOL GRID ── */
+.tool-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.tool-card{
+  background:var(--bg4);border:1px solid var(--border);
+  border-radius:13px;padding:18px 16px;cursor:pointer;
+  transition:all .2s;position:relative;overflow:hidden;
+}
+.tool-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--card-color,var(--blue));transform:scaleX(0);transition:transform .2s;transform-origin:left;
+}
+.tool-card:hover{background:var(--bg5);border-color:var(--border2);transform:translateY(-2px)}
+.tool-card:hover::before{transform:scaleX(1)}
+.tc-ico{
+  width:40px;height:40px;border-radius:10px;
+  background:rgba(255,255,255,.05);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;margin-bottom:12px;
+}
+.tc-name{font-size:14px;font-weight:700;color:var(--white);margin-bottom:4px}
+.tc-desc{font-size:11px;color:var(--muted);line-height:1.5}
+.tc-badge{
+  display:inline-block;margin-top:8px;font-size:9px;font-weight:700;
+  letter-spacing:1px;text-transform:uppercase;padding:2px 7px;border-radius:4px;
+}
+
+/* ── WORKSPACE ── */
+.ws{background:var(--bg3);border-radius:14px;border:1px solid var(--border);overflow:hidden}
+.ws-head{
+  background:var(--bg4);padding:16px 22px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;
+}
+.ws-ico{
+  width:38px;height:38px;background:rgba(59,130,246,.15);
+  border:1px solid rgba(59,130,246,.25);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;
+}
+.ws-head h2{font-size:16px;font-weight:700;color:var(--white)}
+.ws-head p{font-size:11px;color:var(--muted);margin-top:2px}
+.ws-back{
+  margin-left:auto;background:var(--bg3);border:1px solid var(--border2);
+  color:var(--muted);padding:7px 13px;border-radius:8px;
+  cursor:pointer;font-size:12px;font-family:'Be Vietnam Pro',sans-serif;transition:all .18s;
+}
+.ws-back:hover{border-color:var(--blue);color:var(--blue)}
+.ws-body{padding:22px}
+
+/* ── UPLOAD ZONE ── */
+.upload-zone{
+  border:2px dashed var(--border2);border-radius:12px;
+  padding:24px 20px;text-align:center;cursor:pointer;
+  transition:all .2s;background:var(--bg4);
+  position:relative;margin-bottom:12px;
+}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--blue);background:rgba(59,130,246,.05)}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.uz-icon{font-size:28px;margin-bottom:8px;opacity:.6}
+.uz-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+.uz-sub{font-size:11px;color:var(--muted)}
+.uz-types{display:flex;justify-content:center;gap:6px;margin-top:8px}
+.uz-type{font-size:9px;font-weight:700;letter-spacing:.5px;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+.uz-type.pdf{background:rgba(229,62,62,.2);color:#fc8181}
+.uz-type.docx{background:rgba(59,130,246,.2);color:#93c5fd}
+.uz-type.txt{background:rgba(16,185,129,.2);color:#6ee7b7}
+
+.file-preview{
+  background:rgba(6,182,212,.08);border:1px solid rgba(6,182,212,.2);
+  border-radius:10px;padding:11px 14px;margin-bottom:10px;
+  display:none;align-items:center;gap:11px;
+}
+.file-preview.show{display:flex}
+.fp-icon{font-size:22px;flex-shrink:0}
+.fp-info{flex:1;min-width:0}
+.fp-name{font-size:12px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fp-size{font-size:10px;color:var(--muted);margin-top:2px}
+.fp-clear{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:0;flex-shrink:0}
+.fp-clear:hover{color:var(--red)}
+
+.or-div{display:flex;align-items:center;gap:10px;margin:10px 0;color:var(--muted2);font-size:11px}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── EXTRACT STATUS ── */
+.extract-status{display:none;align-items:center;gap:8px;padding:8px 12px;border-radius:8px;font-size:12px;margin-bottom:10px}
+.extract-status.show{display:flex}
+.extract-status.loading{background:rgba(245,158,11,.1);color:var(--gold)}
+.extract-status.done{background:rgba(16,185,129,.1);color:var(--green)}
+.extract-status.err{background:rgba(229,62,62,.1);color:var(--red)}
+.spin{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── INPUTS ── */
+.lbl{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:7px}
+.textarea{
+  width:100%;min-height:130px;padding:12px 14px;
+  background:var(--bg4);border:1px solid var(--border2);border-radius:10px;
+  font-size:13px;font-family:'Be Vietnam Pro',sans-serif;line-height:1.7;
+  resize:vertical;outline:none;color:var(--text);transition:border-color .2s;
+}
+.textarea:focus{border-color:var(--blue)}
+.textarea.has-content{border-color:rgba(6,182,212,.4)}
+select{
+  padding:8px 12px;background:var(--bg4);border:1px solid var(--border2);
+  border-radius:8px;font-size:12px;font-family:'Be Vietnam Pro',sans-serif;
+  color:var(--text);outline:none;cursor:pointer;
+}
+select:focus{border-color:var(--blue)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;transition:all .18s;border:none;font-family:'Be Vietnam Pro',sans-serif}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-primary:hover{background:#2563eb;transform:translateY(-1px)}
+.btn-primary:disabled{background:var(--bg5);color:var(--muted2);cursor:not-allowed;transform:none}
+.btn-teal{background:rgba(6,182,212,.15);border:1px solid rgba(6,182,212,.3);color:var(--teal)}
+.btn-teal:hover{background:rgba(6,182,212,.25)}
+.btn-outline{background:transparent;border:1px solid var(--border2);color:var(--muted)}
+.btn-outline:hover{border-color:var(--blue);color:var(--blue)}
+.btn-green{background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:var(--green)}
+.btn-green:hover{background:rgba(16,185,129,.25)}
+.btn-red{background:rgba(229,62,62,.15);border:1px solid rgba(229,62,62,.3);color:var(--red)}
+.btn-red:hover{background:rgba(229,62,62,.25)}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:7px}
+.arow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}
+
+/* ── RESULT ── */
+.rbox{margin-top:18px;background:var(--bg4);border:1px solid var(--border2);border-radius:12px;overflow:hidden;display:none}
+.rbox.show{display:block}
+.rhead{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--bg5)}
+.rhead span{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
+.rhbtns{display:flex;gap:6px}
+.rcontent{padding:18px;font-size:13px;line-height:1.85;color:var(--text);white-space:pre-wrap;min-height:60px}
+.loading-ai{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;padding:18px}
+.spin-lg{width:16px;height:16px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite}
+
+/* ── AUTH ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);z-index:1000;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.auth-box{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:36px;width:380px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.auth-logo{text-align:center;font-size:40px;margin-bottom:10px}
+.auth-title{font-size:22px;font-weight:800;color:var(--white);text-align:center;margin-bottom:4px}
+.auth-desc{font-size:12px;color:var(--muted);text-align:center;margin-bottom:22px}
+.fg{margin-bottom:12px}
+.fg label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:6px}
+.fg input{width:100%;padding:10px 13px;background:var(--bg4);border:1px solid var(--border2);border-radius:9px;font-size:13px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);outline:none;transition:border-color .2s}
+.fg input:focus{border-color:var(--blue)}
+.auth-err{color:var(--red);font-size:11px;margin-top:5px;display:none}
+.auth-hint{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);text-align:center}
+
+/* ── ADMIN ── */
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.pbox{background:var(--bg3);border:1px solid var(--border);border-radius:13px;overflow:hidden}
+.phead{background:var(--bg4);padding:12px 18px;color:var(--text);font-weight:700;font-size:12px;display:flex;align-items:center;gap:7px;border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:1px}
+.pbody{padding:16px}
+.ulist{list-style:none}
+.uitem{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+.uitem:last-child{border-bottom:none}
+.uav{width:32px;height:32px;background:rgba(59,130,246,.2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--blue);font-weight:700;font-size:12px;flex-shrink:0}
+.uinf{flex:1}.unm{font-size:12px;font-weight:600;color:var(--white)}.umt{font-size:10px;color:var(--muted)}
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scard{background:var(--bg4);border-radius:10px;padding:14px;text-align:center;border:1px solid var(--border)}
+.snum{font-family:'Rajdhani',sans-serif;font-size:32px;font-weight:700;color:var(--blue)}
+.slb{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+
+/* ── SETTINGS ── */
+.sc{background:var(--bg3);border:1px solid var(--border);border-radius:13px;overflow:hidden;margin-bottom:14px}
+.sh{padding:12px 18px;border-bottom:1px solid var(--border);font-weight:700;font-size:11px;color:var(--muted);display:flex;align-items:center;gap:7px;text-transform:uppercase;letter-spacing:1px}
+.sb-s{padding:16px 18px}
+.sr{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border)}
+.sr:last-child{border-bottom:none}
+.slbl{font-size:12px;color:var(--text)}
+.sval{font-size:12px;font-weight:600;color:var(--white)}
+.akrow{display:flex;gap:8px}
+.akrow input{flex:1;padding:9px 12px;background:var(--bg4);border:1px solid var(--border2);border-radius:9px;font-size:12px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);outline:none}
+.akrow input:focus{border-color:var(--blue)}
+
+/* ── LIMIT ── */
+.limit-box{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:36px;width:400px;max-width:95vw;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.5);animation:slideUp .25s ease}
+.limit-box h3{font-size:20px;font-weight:800;color:var(--white);margin-bottom:8px}
+.cinfo{background:var(--bg4);border-radius:10px;padding:13px 16px;text-align:left;margin-bottom:16px}
+.cinfo p{font-size:12px;color:var(--text);margin:4px 0}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg3);border:1px solid var(--border2);color:var(--white);padding:12px 16px;border-radius:10px;font-size:12px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:9999;transform:translateY(60px);opacity:0;transition:all .25s;max-width:280px}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.success{border-color:rgba(16,185,129,.4)}
+.toast.error{border-color:rgba(229,62,62,.4)}
+
+/* ── PRINCIPLES ── */
+.principles-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;margin-top:16px}
+.pc-card{background:var(--bg3);border:1px solid var(--border);border-radius:13px;overflow:hidden}
+.pc-head{padding:13px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.pc-head-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.pc-head-title{font-size:13px;font-weight:700;color:var(--white)}
+.pc-body{padding:16px 18px}
+.pc-item{display:flex;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;color:var(--muted);line-height:1.6}
+.pc-item:last-child{border-bottom:none}
+.pc-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.pc-warn{background:rgba(229,62,62,.08);border:1px solid rgba(229,62,62,.2);border-radius:10px;padding:12px 16px;margin-top:14px;font-size:12px;color:#fc8181;line-height:1.7}
+.pc-warn strong{color:var(--red)}
+
+/* ── NOTICE ── */
+.info-box{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:11px;padding:14px 18px;margin-top:16px}
+.info-box p{font-size:12px;color:var(--muted);line-height:1.8}
+
+/* ── MOBILE ── */
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:190}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .sb-overlay.show{display:block}
+  .header,.content{margin-left:0;left:0}
+  .header-hamburger{display:block}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .agrid{grid-template-columns:1fr}
+  .page{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sb-brand">
+    <div class="sb-logo">🏛️</div>
+    <div class="sb-brand-text">
+      <div class="sb-title">TRỢ LÝ AI</div>
+      <div class="sb-sub">Công chức cấp xã</div>
+    </div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-section">Tổng quan</div>
+    <button class="sb-item active" onclick="showPage('home')" data-page="home">
+      <span class="si-icon">⊞</span> Tổng quan
+    </button>
+
+    <div class="sb-section">Công cụ AI</div>
+    <button class="sb-item" onclick="openTool('review')" data-tool="review">
+      <span class="si-icon">🔍</span> Rà soát văn bản
+    </button>
+    <button class="sb-item" onclick="openTool('draft')" data-tool="draft">
+      <span class="si-icon">✍️</span> Soạn thảo văn bản
+    </button>
+    <button class="sb-item" onclick="openTool('summary')" data-tool="summary">
+      <span class="si-icon">📋</span> Tóm tắt văn bản
+    </button>
+    <button class="sb-item" onclick="openTool('legal')" data-tool="legal">
+      <span class="si-icon">⚖️</span> Tra cứu pháp lý
+    </button>
+    <button class="sb-item" onclick="openTool('procedure')" data-tool="procedure">
+      <span class="si-icon">📝</span> Thủ tục hành chính
+    </button>
+    <button class="sb-item" onclick="openTool('convert')" data-tool="convert">
+      <span class="si-icon">🔄</span> Chuyển đổi văn phong
+    </button>
+    <button class="sb-item" onclick="openTool('translate')" data-tool="translate">
+      <span class="si-icon">🌐</span> Dịch thuật
+    </button>
+    <button class="sb-item" onclick="openTool('meeting')" data-tool="meeting">
+      <span class="si-icon">📅</span> Biên bản họp
+    </button>
+
+    <div class="sb-divider"></div>
+    <div class="sb-section">Hệ thống</div>
+    <button class="sb-item" onclick="showPage('admin')" data-page="admin" id="adminNav" style="display:none">
+      <span class="si-icon">⚙️</span> Quản trị
+    </button>
+    <button class="sb-item" onclick="showPage('principles')" data-page="principles">
+      <span class="si-icon">📜</span> Nguyên tắc AI
+    </button>
+    <button class="sb-item" onclick="showPage('settings')" data-page="settings">
+      <span class="si-icon">🔧</span> Cài đặt
+    </button>
+  </nav>
+
+  <div class="sb-footer">
+    <!-- Developer card - always visible -->
+    <div style="background:linear-gradient(135deg,rgba(185,28,28,.35),rgba(220,38,38,.2));border:1px solid rgba(220,38,38,.35);border-radius:12px;padding:13px 14px;margin-bottom:8px;position:relative;overflow:hidden">
+      <div style="position:absolute;right:-14px;top:-14px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
+      <div style="font-size:10px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,100,100,.7);margin-bottom:8px">Phát triển bởi</div>
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:3px;display:flex;align-items:center;gap:6px">
+        <span style="color:var(--gold)">⭐</span> Trần Văn Tiến
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.55);line-height:1.5;margin-bottom:8px">Chuyên viên VP HĐND-UBND<br>xã Krông Búk · Tỉnh Đắk Lắk</div>
+      <a href="tel:0973141747" style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);border-radius:20px;padding:5px 11px;font-size:12px;font-weight:700;color:var(--gold);text-decoration:none;transition:background .18s" onmouseover="this.style.background='rgba(255,255,255,.18)'" onmouseout="this.style.background='rgba(255,255,255,.1)'">
+        📞 0973.141.747
+      </a>
+    </div>
+
+    <!-- User card (logged in) -->
+    <div class="sb-user-card" id="sbUserCard" style="display:none">
+      <div class="suc-name">👤 <span id="sbUserName">-</span></div>
+      <div class="suc-role" id="sbUserDept">—</div>
+    </div>
+    <div id="sbGuestCard" style="display:none">
+      <button class="sb-item" onclick="showAuth()" style="color:var(--gold);margin-bottom:4px">
+        <span class="si-icon">🔑</span> Đăng nhập
+      </button>
+    </div>
+    <button class="sb-logout" id="sbLogout" style="display:none" onclick="handleLogout()">
+      <span>🚪</span> Đăng xuất
+    </button>
+  </div>
+</aside>
+
+<!-- ── HEADER ── -->
+<header class="header">
+  <button class="header-hamburger" onclick="toggleSidebar()">☰</button>
+  <div class="header-title" id="headerTitle">Tổng quan</div>
+  <div class="header-right">
+    <div class="usage-chip">
+      <span>Lượt:</span>
+      <div class="usage-bar"><div class="usage-fill" id="uFill" style="width:0%"></div></div>
+      <span class="usage-num"><span id="uUsed">0</span><span id="uMax">/20</span></span>
+    </div>
+    <span id="aBadge" style="display:none;font-size:11px;font-weight:700;color:var(--gold);background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.2);border-radius:20px;padding:4px 10px">👑 Admin</span>
+    <button class="hbtn hbtn-red" id="loginBtn" onclick="showAuth()">🔑 Đăng nhập</button>
+  </div>
+</header>
+
+<!-- ── CONTENT ── -->
+<main class="content">
+
+  <!-- HOME / DASHBOARD -->
+  <div class="page active" id="page-home">
+    <div class="dash-hero">
+      <div class="dh-logo">🤖</div>
+      <div class="dh-text">
+        <div class="dh-title">CÔNG CỤ HỖ TRỢ CÔNG CHỨC CẤP XÃ</div>
+        <div class="dh-sub">Xã Krông Búk · Tỉnh Đắk Lắk</div>
+        <div class="dh-quote">"Ứng dụng AI nâng cao hiệu quả xử lý văn bản hành chính"</div>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="sc-label">Tổng công cụ</div>
+        <div class="sc-num blue">08</div>
+        <div class="sc-desc">Công cụ AI sẵn sàng</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="sc-label">Lượt dùng hôm nay</div>
+        <div class="sc-num gold" id="statToday">0</div>
+        <div class="sc-desc">Yêu cầu đã xử lý</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="sc-label">Tổng lượt dùng</div>
+        <div class="sc-num purple" id="statTotal">0</div>
+        <div class="sc-desc">Kể từ khi ra mắt</div>
+      </div>
+      <div class="stat-card green">
+        <div class="sc-label">Tài khoản</div>
+        <div class="sc-num green" id="statUsers">1</div>
+        <div class="sc-desc">Người dùng đã đăng ký</div>
+      </div>
+    </div>
+
+    <!-- NGUYÊN TẮC AI INLINE -->
+    <div style="background:linear-gradient(135deg,#b91c1c 0%,#dc2626 40%,#991b1b 100%);border-radius:16px;padding:24px 28px;margin-bottom:20px;position:relative;overflow:hidden">
+      <!-- decorative circles -->
+      <div style="position:absolute;right:-30px;top:-30px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
+      <div style="position:absolute;right:80px;bottom:-50px;width:140px;height:140px;border-radius:50%;background:rgba(255,255,255,.03)"></div>
+      <div style="position:relative;z-index:1">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+          <span style="font-size:20px">📜</span>
+          <span style="font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.9)">NGUYÊN TẮC SỬ DỤNG CHATBOT AI TRONG THỰC THI CÔNG VỤ</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+
+          <div style="background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px">
+            <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="background:rgba(255,255,255,.15);border-radius:6px;padding:2px 8px">⚖️ Nguyên tắc chung</span></div>
+            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:6px">
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span>Tuân thủ pháp luật, tôn trọng quyền lợi hợp pháp của cá nhân, tổ chức</li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span>Phù hợp đạo đức, văn hóa và truyền thống tốt đẹp dân tộc Việt Nam</li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span>Thực hiện đúng quy định an ninh mạng và an toàn thông tin</li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span>Chịu trách nhiệm về hành vi; phối hợp xử lý kịp thời vi phạm</li>
+            </ul>
+          </div>
+
+          <div style="background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px">
+            <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="background:rgba(255,255,255,.15);border-radius:6px;padding:2px 8px">🗄️ Cung cấp dữ liệu</span></div>
+            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:6px">
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span><span><strong style="color:#fde68a">Không</strong> chia sẻ dữ liệu bí mật Nhà nước lên bất kỳ chatbot AI nào</span></li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span>Tránh dùng tên/mật khẩu trùng tài khoản công vụ (email cơ quan)</li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span>Kiểm tra kỹ kết quả AI trước khi sử dụng chính thức</li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span><strong style="color:#fde68a">Không</strong> phụ thuộc hoàn toàn AI — kết hợp kinh nghiệm cá nhân</li>
+            </ul>
+          </div>
+
+          <div style="background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px">
+            <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="background:rgba(255,255,255,.15);border-radius:6px;padding:2px 8px">🏛️ Đối với cơ quan</span></div>
+            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:6px">
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span><strong style="color:#fde68a">Người đứng đầu chịu trách nhiệm</strong> về việc sử dụng AI trong cơ quan</li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span>Phân quyền truy cập phù hợp chức năng, nhiệm vụ từng người</li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span>Thu hồi tài khoản khi CBCC nghỉ việc hoặc chuyển công tác</li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span>Từng bước xây dựng cơ sở dữ liệu tri thức chatbot chuyên ngành</li>
+            </ul>
+          </div>
+
+          <div style="background:rgba(0,0,0,.2);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:14px 16px">
+            <div style="font-size:11px;font-weight:800;letter-spacing:1px;color:rgba(255,255,255,.5);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px"><span style="background:rgba(255,255,255,.15);border-radius:6px;padding:2px 8px">👤 Đối với cá nhân</span></div>
+            <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:6px">
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span><strong style="color:#fde68a">Không</strong> tiết lộ tài khoản đăng nhập hệ thống cơ quan cho AI</li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span>Tại điểm Internet công cộng: <strong style="color:#fde68a">tuyệt đối không bật lưu mật khẩu</strong></li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span><strong style="color:#fde68a">Không</strong> cung cấp thông tin cá nhân, nhân thân của bản thân hoặc người khác</li>
+              <li style="font-size:12px;color:rgba(255,255,255,.8);display:flex;gap:7px;line-height:1.5"><span style="color:rgba(255,200,100,.8);flex-shrink:0">›</span><strong style="color:#fde68a">Không</strong> dùng AI cho hacking, deep-fake, lừa đảo hoặc mục đích trái pháp luật</li>
+            </ul>
+          </div>
+
+        </div>
+        <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:rgba(255,255,255,.45);display:flex;align-items:center;justify-content:space-between;flex-wrap:gap">
+          <span>📋 Nguồn: Bộ Nguyên tắc sử dụng Chatbot AI — Bộ Khoa học và Công nghệ</span>
+          <button onclick="showPage('principles')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.7);padding:5px 12px;border-radius:7px;font-size:11px;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif">Xem chi tiết →</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="box">
+      <div class="box-head">
+        <div class="box-head-title">🛠️ Công cụ AI</div>
+      </div>
+      <div class="box-body">
+        <div class="tool-grid">
+          <div class="tool-card" style="--card-color:var(--blue)" onclick="openTool('review')">
+            <div class="tc-ico">🔍</div>
+            <div class="tc-name">Rà soát văn bản</div>
+            <div class="tc-desc">Phát hiện lỗi chính tả, thể thức, nội dung theo NĐ30</div>
+            <span class="tc-badge" style="background:rgba(59,130,246,.15);color:var(--blue)">Phổ biến</span>
+          </div>
+          <div class="tool-card" style="--card-color:var(--teal)" onclick="openTool('draft')">
+            <div class="tc-ico">✍️</div>
+            <div class="tc-name">Soạn thảo văn bản</div>
+            <div class="tc-desc">Công văn, tờ trình, quyết định, thông báo chuẩn mẫu</div>
+            <span class="tc-badge" style="background:rgba(6,182,212,.15);color:var(--teal)">Tiết kiệm thời gian</span>
+          </div>
+          <div class="tool-card" style="--card-color:var(--purple)" onclick="openTool('summary')">
+            <div class="tc-ico">📋</div>
+            <div class="tc-name">Tóm tắt văn bản</div>
+            <div class="tc-desc">Trích xuất điểm chính từ văn bản dài</div>
+          </div>
+          <div class="tool-card" style="--card-color:var(--gold)" onclick="openTool('legal')">
+            <div class="tc-ico">⚖️</div>
+            <div class="tc-name">Tra cứu pháp lý</div>
+            <div class="tc-desc">Gợi ý luật, nghị định, thông tư liên quan</div>
+          </div>
+          <div class="tool-card" style="--card-color:var(--green)" onclick="openTool('procedure')">
+            <div class="tc-ico">📝</div>
+            <div class="tc-name">Thủ tục hành chính</div>
+            <div class="tc-desc">Tra cứu hồ sơ, quy trình, thời hạn giải quyết</div>
+          </div>
+          <div class="tool-card" style="--card-color:var(--orange)" onclick="openTool('convert')">
+            <div class="tc-ico">🔄</div>
+            <div class="tc-name">Chuyển đổi văn phong</div>
+            <div class="tc-desc">Văn nói → văn bản hành chính chuẩn mực</div>
+          </div>
+          <div class="tool-card" style="--card-color:var(--teal)" onclick="openTool('translate')">
+            <div class="tc-ico">🌐</div>
+            <div class="tc-name">Dịch thuật</div>
+            <div class="tc-desc">Anh ↔ Việt phục vụ công tác đối ngoại</div>
+          </div>
+          <div class="tool-card" style="--card-color:var(--purple)" onclick="openTool('meeting')">
+            <div class="tc-ico">📅</div>
+            <div class="tc-name">Biên bản họp</div>
+            <div class="tc-desc">Ghi chú → Biên bản cuộc họp chính thức</div>
+            <span class="tc-badge" style="background:rgba(139,92,246,.15);color:var(--purple)">Mới</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-box" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+      <p style="flex:1">
+        📂 Hỗ trợ upload file <strong style="color:var(--white)">PDF · DOCX · TXT</strong> trong mỗi công cụ &nbsp;·&nbsp;
+        🎯 Khách được <strong style="color:var(--white)">20 lượt miễn phí</strong> &nbsp;·&nbsp;
+        📞 Liên hệ cấp tài khoản: <strong style="color:var(--gold)">Trần Văn Tiến — 0973.141.747</strong> &nbsp;·&nbsp;
+        ⚠️ Kết quả AI chỉ mang tính tham khảo · Công cụ cá nhân, không đại diện cơ quan
+      </p>
+      <button class="btn btn-outline btn-sm" onclick="showPage('principles')" style="white-space:nowrap;flex-shrink:0">📜 Xem nguyên tắc AI</button>
+    </div>
+  </div>
+
+  <!-- TOOLS PAGE -->
+  <div class="page" id="page-tools">
+    <div id="toolWS"></div><!-- workspace injected here -->
+  </div>
+
+  <!-- ADMIN -->
+  <div class="page" id="page-admin">
+    <div class="agrid">
+      <div class="pbox">
+        <div class="phead">👥 Tài khoản người dùng</div>
+        <div class="pbody">
+          <div style="display:flex;gap:7px;margin-bottom:12px">
+            <input id="nu" placeholder="Tên đăng nhập" style="flex:1;padding:7px 10px;background:var(--bg4);border:1px solid var(--border2);border-radius:8px;font-size:12px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);outline:none">
+            <input id="np" type="password" placeholder="Mật khẩu" style="flex:1;padding:7px 10px;background:var(--bg4);border:1px solid var(--border2);border-radius:8px;font-size:12px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);outline:none">
+            <button class="btn btn-green btn-sm" onclick="createUser()">➕</button>
+          </div>
+          <ul class="ulist" id="uList"></ul>
+        </div>
+      </div>
+      <div class="pbox">
+        <div class="phead">📊 Thống kê hệ thống</div>
+        <div class="pbody">
+          <div class="sgrid">
+            <div class="scard"><div class="snum" id="adUsers">0</div><div class="slb">Tài khoản</div></div>
+            <div class="scard"><div class="snum" id="adTotal">0</div><div class="slb">Tổng lượt</div></div>
+            <div class="scard"><div class="snum" id="adGuest">0</div><div class="slb">Lượt khách</div></div>
+            <div class="scard"><div class="snum" id="adToday">0</div><div class="slb">Hôm nay</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="page" id="page-settings">
+    <div class="sc"><div class="sh">🔑 API Key Gemini</div><div class="sb-s">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Lấy miễn phí tại <a href="https://aistudio.google.com" target="_blank" style="color:var(--blue)">aistudio.google.com</a> → Get API Key</p>
+      <div class="akrow"><input type="password" id="akIn" placeholder="Dán Gemini API Key..."><button class="btn btn-primary btn-sm" onclick="saveKey()">💾 Lưu</button></div>
+      <p style="font-size:11px;color:var(--red);margin-top:7px">⚠️ Key lưu trong trình duyệt, không gửi lên bất kỳ máy chủ nào</p>
+    </div></div>
+    <div class="sc"><div class="sh">🤖 Model AI</div><div class="sb-s">
+      <div class="sr"><span class="slbl">Model đang dùng</span>
+        <select id="modelSel" onchange="saveModel()" style="background:var(--bg4)">
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash — Mới nhất · Thông minh nhất</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash — Nhanh · Miễn phí</option>
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro — Chính xác nhất</option>
+        </select>
+      </div>
+      <div class="sr"><span class="slbl">Trạng thái kết nối</span><span class="sval" id="apiSt">⏳ Chưa kiểm tra</span></div>
+      <div style="margin-top:10px"><button class="btn btn-outline btn-sm" onclick="testApi()">🔌 Kiểm tra kết nối</button></div>
+    </div></div>
+    <div class="sc"><div class="sh">ℹ️ Thông tin</div><div class="sb-s">
+      <div class="sr"><span class="slbl">Phiên bản</span><span class="sval">1.0.0</span></div>
+      <div class="sr"><span class="slbl">Phát triển bởi</span><span class="sval">Trần Văn Tiến</span></div>
+      <div class="sr"><span class="slbl">Liên hệ</span><span class="sval"><a href="tel:0973141747" style="color:var(--blue)">0973.141.747</a></span></div>
+      <div class="sr"><span class="slbl">Địa bàn</span><span class="sval">Xã Krông Búk · Tỉnh Đắk Lắk</span></div>
+      <div class="sr"><span class="slbl">Lưu ý pháp lý</span><span class="sval" style="font-size:11px;color:var(--muted)">Công cụ cá nhân · Không đại diện cơ quan</span></div>
+    </div></div>
+  </div>
+
+  <!-- PRINCIPLES PAGE -->
+  <div class="page" id="page-principles">
+    <div class="dash-hero" style="background:linear-gradient(135deg,#1e3a5f 0%,#1a4a7a 60%,#0f2d52 100%);margin-bottom:20px">
+      <div class="dh-logo">📜</div>
+      <div class="dh-text">
+        <div class="dh-title">NGUYÊN TẮC SỬ DỤNG CHATBOT AI</div>
+        <div class="dh-sub">Dành cho cán bộ, công chức, viên chức trong thực thi công vụ</div>
+        <div class="dh-quote">"Sử dụng AI một cách thận trọng, hiệu quả và có trách nhiệm"</div>
+      </div>
+    </div>
+
+    <div class="principles-grid">
+      <!-- Nguyên tắc chung -->
+      <div class="pc-card">
+        <div class="pc-head">
+          <div class="pc-head-icon" style="background:rgba(59,130,246,.15);color:var(--blue)">⚖️</div>
+          <div class="pc-head-title">1. Nguyên tắc chung</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-item"><div class="pc-dot" style="background:var(--blue)"></div><span>Tuân thủ pháp luật Việt Nam, tôn trọng quyền và lợi ích hợp pháp của cá nhân, tổ chức</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--blue)"></div><span>Hành vi ứng xử phù hợp với giá trị đạo đức, văn hóa và truyền thống tốt đẹp của dân tộc</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--blue)"></div><span>Thực hiện đúng quy định về bảo vệ an ninh mạng và an toàn thông tin</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--blue)"></div><span>Chịu trách nhiệm đối với hành vi sử dụng AI; phối hợp xử lý kịp thời vi phạm</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--blue)"></div><span>Cơ quan sử dụng AI có trách nhiệm báo cáo tình huống rủi ro về Bộ KH&CN (Cục CĐS quốc gia)</span></div>
+        </div>
+      </div>
+
+      <!-- Nguyên tắc dữ liệu -->
+      <div class="pc-card">
+        <div class="pc-head">
+          <div class="pc-head-icon" style="background:rgba(245,158,11,.15);color:var(--gold)">🗄️</div>
+          <div class="pc-head-title">2. Nguyên tắc cung cấp dữ liệu</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-item"><div class="pc-dot" style="background:var(--gold)"></div><span>Không chia sẻ dữ liệu thuộc danh mục <strong style="color:var(--white)">bí mật Nhà nước</strong> lên bất kỳ chatbot AI nào</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--gold)"></div><span>Không cung cấp thông tin vi phạm chủ quyền, thuần phong mỹ tục hoặc bản quyền</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--gold)"></div><span>Tránh dùng tên/mật khẩu trùng với tài khoản công vụ (email cơ quan, hệ thống nội bộ)</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--gold)"></div><span>Kiểm tra kỹ kết quả AI trước khi sử dụng — đảm bảo chính xác, phù hợp ngữ cảnh</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--gold)"></div><span>Không phụ thuộc hoàn toàn vào AI — kết hợp kiến thức và kinh nghiệm cá nhân</span></div>
+        </div>
+      </div>
+
+      <!-- Nguyên tắc cơ quan -->
+      <div class="pc-card">
+        <div class="pc-head">
+          <div class="pc-head-icon" style="background:rgba(16,185,129,.15);color:var(--green)">🏛️</div>
+          <div class="pc-head-title">3. Nguyên tắc đối với cơ quan, đơn vị</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-item"><div class="pc-dot" style="background:var(--green)"></div><span>Tuyên truyền, hướng dẫn CBCCVC sử dụng AI phù hợp chức năng, nhiệm vụ. <strong style="color:var(--white)">Người đứng đầu chịu trách nhiệm</strong></span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--green)"></div><span>Quản lý, bảo mật tài khoản AI; thông báo ngay khi bị mất quyền kiểm soát hoặc giả mạo</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--green)"></div><span>Phân quyền truy cập phù hợp với chức năng, nhiệm vụ của từng người dùng</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--green)"></div><span>Thu hồi tài khoản khi CBCCVC nghỉ việc hoặc chuyển công tác</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--green)"></div><span>Từng bước hình thành cơ sở dữ liệu tri thức riêng để xây dựng chatbot chuyên ngành</span></div>
+        </div>
+      </div>
+
+      <!-- Nguyên tắc cá nhân -->
+      <div class="pc-card">
+        <div class="pc-head">
+          <div class="pc-head-icon" style="background:rgba(139,92,246,.15);color:var(--purple)">👤</div>
+          <div class="pc-head-title">4. Nguyên tắc đối với cá nhân</div>
+        </div>
+        <div class="pc-body">
+          <div class="pc-item"><div class="pc-dot" style="background:var(--purple)"></div><span>Tự quản lý và chịu trách nhiệm bảo vệ thông tin cá nhân trên các nền tảng AI</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--purple)"></div><span>Không tiết lộ tài khoản đăng nhập hoặc kết nối trái phép hệ thống cơ quan vào AI</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--purple)"></div><span>Tại điểm truy cập Internet công cộng: <strong style="color:var(--white)">tuyệt đối không bật lưu mật khẩu</strong></span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--purple)"></div><span>Không cung cấp dữ liệu cá nhân, thông tin nhân thân của bản thân hoặc người khác lên AI</span></div>
+          <div class="pc-item"><div class="pc-dot" style="background:var(--purple)"></div><span>Không dùng AI cho mục đích trái pháp luật, vi phạm đạo đức, hacking, deep-fake, lừa đảo</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pc-warn">
+      ⚠️ <strong>Lưu ý quan trọng:</strong> Các nguyên tắc trên <strong>không áp dụng</strong> đối với việc sử dụng chatbot AI trong các hoạt động nghiên cứu, thực thi công vụ thuộc lĩnh vực <strong>quốc phòng, an ninh</strong>.
+      <br>📋 Nguồn: Bộ Nguyên tắc sử dụng Chatbot AI trong cơ quan nhà nước — Bộ Khoa học và Công nghệ.
+    </div>
+  </div>
+
+</main>
+
+<!-- SETTINGS PASSWORD OVERLAY -->
+<div class="overlay" id="settingsPwOv">
+  <div class="auth-box">
+    <div class="auth-logo">🔧</div>
+    <div class="auth-title">Xác thực Cài đặt</div>
+    <div class="auth-desc">Nhập mật khẩu quản trị để vào trang cài đặt</div>
+    <div class="fg"><label>Mật khẩu quản trị</label><input type="password" id="settingsPw" placeholder="Nhập mật khẩu..." onkeydown="if(event.key==='Enter')checkSettingsPw()"></div>
+    <p class="auth-err" id="settingsPwErr">Mật khẩu không đúng!</p>
+    <button class="btn btn-primary" onclick="checkSettingsPw()" style="width:100%;justify-content:center;margin-top:6px">🔓 Xác nhận</button>
+    <button class="btn btn-outline" onclick="document.getElementById('settingsPwOv').classList.remove('show')" style="width:100%;justify-content:center;margin-top:7px">Huỷ</button>
+  </div>
+</div>
+
+<!-- AUTH -->
+<div class="overlay" id="authOv">
+  <div class="auth-box">
+    <div class="auth-logo">🔐</div>
+    <div class="auth-title">Đăng nhập</div>
+    <div class="auth-desc">Đăng nhập để sử dụng không giới hạn lượt</div>
+    <div class="fg"><label>Tên đăng nhập</label><input type="text" id="au" placeholder="Nhập tên đăng nhập"></div>
+    <div class="fg"><label>Mật khẩu</label><input type="password" id="ap" placeholder="Nhập mật khẩu" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <p class="auth-err" id="aerr">Sai tên đăng nhập hoặc mật khẩu!</p>
+    <button class="btn btn-primary" onclick="doLogin()" style="width:100%;justify-content:center;margin-top:6px">🔑 Đăng nhập</button>
+    <button class="btn btn-outline" onclick="closeAuth()" style="width:100%;justify-content:center;margin-top:7px">Dùng thử 20 lượt miễn phí</button>
+    <div class="auth-hint">Chưa có tài khoản? Liên hệ <strong style="color:var(--blue)">0973.141.747</strong></div>
+  </div>
+</div>
+
+<!-- LIMIT -->
+<div class="overlay" id="limitOv">
+  <div class="limit-box">
+    <div style="font-size:46px;margin-bottom:10px">🔒</div>
+    <h3>Hết lượt dùng thử</h3>
+    <p style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:14px">Bạn đã dùng hết <strong style="color:var(--white)">20 lượt</strong> miễn phí. Liên hệ để được cấp tài khoản không giới hạn.</p>
+    <div class="cinfo">
+      <p>👤 <strong>Trần Văn Tiến</strong></p>
+      <p>📞 <strong>0973.141.747</strong></p>
+      <p>📍 Xã Krông Búk · Tỉnh Đắk Lắk</p>
+    </div>
+    <button class="btn btn-primary" onclick="document.getElementById('limitOv').classList.remove('show');showAuth()" style="width:100%;justify-content:center">🔑 Đăng nhập ngay</button>
+    <button class="btn btn-outline" onclick="document.getElementById('limitOv').classList.remove('show')" style="width:100%;justify-content:center;margin-top:7px">Đóng</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// ── STORAGE ──
+const S={get:k=>{try{return JSON.parse(localStorage.getItem(k))}catch{return null}},set:(k,v)=>localStorage.setItem(k,JSON.stringify(v)),del:k=>localStorage.removeItem(k)};
+const today=()=>new Date().toLocaleDateString('vi-VN');
+const toolTexts={};
+
+// ── INIT ──
+function init(){
+  if(!S.get('users')) S.set('users',[
+    {username:'admin',password:'admin@krongbuk2025',role:'admin',usage:0,dept:'Quản trị hệ thống'},
+    {username:'phongkinhtế',password:'kt@krongbuk2025',role:'user',usage:0,dept:'Phòng Kinh tế'},
+    {username:'phongvhxh',password:'vhxh@krongbuk2025',role:'user',usage:0,dept:'Phòng Văn hóa - Xã hội'},
+    {username:'tthcc',password:'hcc@krongbuk2025',role:'user',usage:0,dept:'Trung tâm Phục vụ HC công'},
+    {username:'vanphong',password:'vp@krongbuk2025',role:'user',usage:0,dept:'Văn phòng HĐND-UBND'},
+    {username:'tramyte',password:'yt@krongbuk2025',role:'user',usage:0,dept:'Trạm Y tế'},
+    {username:'ttsunghiep',password:'sn@krongbuk2025',role:'user',usage:0,dept:'TT Cung ứng DV sự nghiệp công'},
+  ]);
+  if(S.get('guestUsage')==null) S.set('guestUsage',0);
+  if(!S.get('totalUsage')) S.set('totalUsage',0);
+  if(!S.get('todayUsage')) S.set('todayUsage',{date:today(),count:0});
+}
+let CU=S.get('currentUser')||null;
+
+// ── SETTINGS PASSWORD ──
+const SETTINGS_PW='admin@krongbuk2025';
+function showSettings(){
+  // nếu đã là admin thì vào thẳng
+  if(CU?.role==='admin'){_goSettings();return}
+  document.getElementById('settingsPwOv').classList.add('show');
+  document.getElementById('settingsPwErr').style.display='none';
+  document.getElementById('settingsPw').value='';
+  setTimeout(()=>document.getElementById('settingsPw').focus(),100);
+}
+function checkSettingsPw(){
+  const pw=document.getElementById('settingsPw').value;
+  if(pw===SETTINGS_PW){document.getElementById('settingsPwOv').classList.remove('show');_goSettings()}
+  else{document.getElementById('settingsPwErr').style.display='block'}
+}
+function _goSettings(){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-settings').classList.add('active');
+  document.querySelector('[data-page="settings"]')?.classList.add('active');
+  document.getElementById('headerTitle').textContent='Cài đặt';
+  closeSidebar();
+  const m=localStorage.getItem('geminiModel');if(m&&document.getElementById('modelSel'))document.getElementById('modelSel').value=m;
+  const k=localStorage.getItem('geminiApiKey');if(k&&document.getElementById('apiSt'))document.getElementById('apiSt').textContent='🔑 API Key đã lưu';
+}
+
+// ── AUTH ──
+function showAuth(){document.getElementById('authOv').classList.add('show');document.getElementById('aerr').style.display='none';document.getElementById('au').value='';document.getElementById('ap').value='';setTimeout(()=>document.getElementById('au').focus(),100)}
+function closeAuth(){document.getElementById('authOv').classList.remove('show')}
+function doLogin(){
+  const u=document.getElementById('au').value.trim(),p=document.getElementById('ap').value;
+  const f=(S.get('users')||[]).find(x=>x.username===u&&x.password===p);
+  if(!f){document.getElementById('aerr').style.display='block';return}
+  CU=f;S.set('currentUser',f);closeAuth();updateUI();toast('✅ Chào '+f.username,'success');
+}
+function handleLogout(){CU=null;S.del('currentUser');updateUI();toast('👋 Đã đăng xuất','success');showPage('home')}
+
+// ── UI ──
+function updateUI(){
+  const li=!!CU,ad=CU?.role==='admin';
+  document.getElementById('loginBtn').style.display=li?'none':'';
+  document.getElementById('adminNav').style.display=ad?'':'none';
+  document.getElementById('aBadge').style.display=ad?'':'none';
+  document.getElementById('sbLogout').style.display=li?'':'none';
+  document.getElementById('sbUserCard').style.display=li?'':'none';
+  document.getElementById('sbGuestCard').style.display=li?'none':'';
+  if(li){document.getElementById('sbUserName').textContent=CU.username;const deptEl=document.getElementById('sbUserDept');if(deptEl)deptEl.textContent=CU.dept||'—';}
+  updateUsage();updateStats();if(ad)updateAdmin();
+}
+function updateUsage(){
+  let used,max;
+  if(CU){const u=(S.get('users')||[]).find(x=>x.username===CU.username);used=u?.usage||0;max=CU.role==='admin'?9999:999;document.getElementById('uMax').textContent=CU.role==='admin'?'/∞':'/999';document.getElementById('uFill').style.width=(CU.role==='admin'?100:Math.min(used/max*100,100))+'%'}
+  else{used=S.get('guestUsage')||0;max=20;document.getElementById('uMax').textContent='/20';document.getElementById('uFill').style.width=Math.min(used/max*100,100)+'%'}
+  document.getElementById('uUsed').textContent=used;
+}
+function updateStats(){
+  const td=S.get('todayUsage')||{count:0};
+  const el=document.getElementById('statToday');if(el)el.textContent=td.date===today()?td.count:0;
+  const el2=document.getElementById('statTotal');if(el2)el2.textContent=S.get('totalUsage')||0;
+  const el3=document.getElementById('statUsers');if(el3)el3.textContent=(S.get('users')||[]).length;
+}
+
+// ── SIDEBAR ──
+function toggleSidebar(){const sb=document.getElementById('sidebar');const ov=document.getElementById('sbOverlay');sb.classList.toggle('open');ov.classList.toggle('show')}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sbOverlay').classList.remove('show')}
+
+// ── PAGES ──
+const pageTitles={home:'Tổng quan',tools:'Công cụ AI',admin:'Quản trị',settings:'Cài đặt',principles:'Nguyên tắc sử dụng AI'};
+function showPage(n){
+  if(n==='settings'){showSettings();return}
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+n)?.classList.add('active');
+  document.querySelector(`[data-page="${n}"]`)?.classList.add('active');
+  document.getElementById('headerTitle').textContent=pageTitles[n]||'';
+  closeSidebar();
+  if(n==='admin')updateAdmin();
+  if(n==='home')updateStats();
+}
+
+// ── TOOL CONFIG ──
+const TOOLS={
+  review:{icon:'🔍',name:'Rà soát văn bản',desc:'Phát hiện lỗi theo Nghị định 30/2020/NĐ-CP',color:'var(--blue)',
+    extra:`<select id="sel-review" style="background:var(--bg4)"><option value="full">Rà soát toàn diện</option><option value="spelling">Chỉ chính tả</option><option value="format">Chỉ thể thức</option><option value="content">Chỉ nội dung</option></select>`,
+    ph:'Dán toàn bộ nội dung văn bản vào đây hoặc upload file...'},
+  draft:{icon:'✍️',name:'Soạn thảo văn bản',desc:'Tạo văn bản hành chính chuẩn thể thức',color:'var(--teal)',
+    extra:`<select id="sel-draft" style="background:var(--bg4)"><option value="cong-van">Công văn</option><option value="to-trinh">Tờ trình</option><option value="quyet-dinh">Quyết định</option><option value="thong-bao">Thông báo</option><option value="bao-cao">Báo cáo</option><option value="ke-hoach">Kế hoạch</option><option value="bien-ban">Biên bản</option></select>`,
+    ph:'Mô tả yêu cầu soạn thảo hoặc upload file mẫu tham khảo...'},
+  summary:{icon:'📋',name:'Tóm tắt văn bản',desc:'Trích xuất nội dung chính từ văn bản dài',color:'var(--purple)',
+    extra:`<select id="sel-summary" style="background:var(--bg4)"><option value="short">Ngắn (3–5 điểm)</option><option value="medium">Vừa (~1 trang)</option><option value="detailed">Chi tiết</option></select>`,
+    ph:'Dán nội dung văn bản cần tóm tắt hoặc upload file...'},
+  legal:{icon:'⚖️',name:'Tra cứu căn cứ pháp lý',desc:'Gợi ý luật, nghị định, thông tư liên quan',color:'var(--gold)',
+    extra:'',ph:'Mô tả vấn đề hoặc upload văn bản cần tra cứu pháp lý...'},
+  procedure:{icon:'📝',name:'Hỏi đáp thủ tục HC',desc:'Tra cứu hồ sơ, quy trình, thời hạn giải quyết',color:'var(--green)',
+    extra:'',ph:'Nhập câu hỏi về thủ tục hành chính cấp xã...'},
+  convert:{icon:'🔄',name:'Chuyển đổi văn phong',desc:'Văn nói → văn bản hành chính chuẩn',color:'var(--orange)',
+    extra:`<select id="sel-convert" style="background:var(--bg4)"><option value="hanh-chinh">→ Văn bản hành chính</option><option value="bao-cao">→ Báo cáo tình hình</option><option value="kien-nghi">→ Kiến nghị chính thức</option></select>`,
+    ph:'Nhập nội dung cần chuyển đổi hoặc upload file...'},
+  translate:{icon:'🌐',name:'Dịch thuật văn bản',desc:'Hỗ trợ công tác đối ngoại',color:'var(--teal)',
+    extra:`<select id="sel-translate" style="background:var(--bg4)"><option value="vi-en">Việt → Anh</option><option value="en-vi">Anh → Việt</option></select>`,
+    ph:'Dán nội dung cần dịch hoặc upload file...'},
+  meeting:{icon:'📅',name:'Soạn biên bản họp',desc:'Từ ghi chú → Biên bản chính thức',color:'var(--purple)',
+    extra:'',ph:'Nhập ghi chú cuộc họp hoặc upload file...'},
+};
+
+function openTool(t){
+  showPage('tools');
+  document.getElementById('headerTitle').textContent=TOOLS[t]?.name||'Công cụ AI';
+  document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
+  document.querySelector(`[data-tool="${t}"]`)?.classList.add('active');
+  const cfg=TOOLS[t];
+  document.getElementById('toolWS').innerHTML=`
+    <div class="ws">
+      <div class="ws-head">
+        <div class="ws-ico">${cfg.icon}</div>
+        <div><h2>${cfg.name}</h2><p>${cfg.desc}</p></div>
+        <button class="ws-back" onclick="showPage('home')">← Quay lại</button>
+      </div>
+      <div class="ws-body">
+        <div class="extract-status" id="es-${t}"></div>
+        <div class="file-preview" id="fp-${t}">
+          <div class="fp-icon" id="fp-ico-${t}">📄</div>
+          <div class="fp-info">
+            <div class="fp-name" id="fp-name-${t}">-</div>
+            <div class="fp-size" id="fp-size-${t}">-</div>
+          </div>
+          <button class="fp-clear" onclick="clearFile('${t}')">✕</button>
+        </div>
+        <div class="upload-zone" id="uzbox-${t}"
+          ondragover="event.preventDefault();this.classList.add('drag')"
+          ondragleave="this.classList.remove('drag')"
+          ondrop="onDrop(event,'${t}')">
+          <input type="file" accept=".pdf,.docx,.doc,.txt" onchange="onFileChange(event,'${t}')">
+          <div class="uz-icon">📂</div>
+          <div class="uz-title">Kéo thả hoặc click để upload file</div>
+          <div class="uz-sub">Hỗ trợ đọc nội dung tự động</div>
+          <div class="uz-types">
+            <span class="uz-type pdf">PDF</span>
+            <span class="uz-type docx">DOCX</span>
+            <span class="uz-type txt">TXT</span>
+          </div>
+        </div>
+        <div class="or-div">hoặc nhập trực tiếp</div>
+        <label class="lbl">Nội dung / Yêu cầu</label>
+        <textarea class="textarea" id="tx-${t}" placeholder="${cfg.ph}" oninput="checkEnable('${t}')"></textarea>
+        <div class="arow">
+          ${cfg.extra}
+          <button class="btn btn-primary" id="runBtn-${t}" onclick="run('${t}')" disabled>
+            ${cfg.icon} Xử lý ngay
+          </button>
+        </div>
+        <div class="rbox" id="rb-${t}">
+          <div class="rhead">
+            <span>📊 Kết quả</span>
+            <div class="rhbtns">
+              <button class="btn btn-sm btn-teal" onclick="xword('${t}')">📄 Xuất Word</button>
+              <button class="btn btn-sm btn-outline" onclick="cp('${t}')">📋 Sao chép</button>
+            </div>
+          </div>
+          <div class="rcontent" id="rt-${t}"></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ── FILE HANDLING ──
+function onDrop(ev,t){ev.preventDefault();document.getElementById('uzbox-'+t)?.classList.remove('drag');const f=ev.dataTransfer.files[0];if(f)processFile(f,t)}
+function onFileChange(ev,t){const f=ev.target.files[0];if(f)processFile(f,t)}
+
+async function processFile(file,t){
+  const ext=file.name.split('.').pop().toLowerCase();
+  if(!['pdf','docx','doc','txt'].includes(ext)){toast('⚠️ Chỉ hỗ trợ PDF, DOCX, TXT','error');return}
+  setES(t,'loading','⏳ Đang đọc: '+file.name);
+  document.getElementById('fp-ico-'+t).textContent=ext==='pdf'?'📕':ext.includes('doc')?'📘':'📄';
+  document.getElementById('fp-name-'+t).textContent=file.name;
+  document.getElementById('fp-size-'+t).textContent=fmtSize(file.size)+' · '+ext.toUpperCase();
+  document.getElementById('fp-'+t).classList.add('show');
+  document.getElementById('uzbox-'+t).style.display='none';
+  try{
+    let text='';
+    if(ext==='txt') text=await readTxt(file);
+    else if(ext==='pdf') text=await readPdf(file);
+    else text=await readDocx(file);
+    if(!text.trim()) throw new Error('Không đọc được nội dung. Thử chuyển sang TXT.');
+    toolTexts[t]=text;
+    document.getElementById('tx-'+t).value=text;
+    document.getElementById('tx-'+t).classList.add('has-content');
+    setES(t,'done','✅ Đã đọc '+text.length.toLocaleString()+' ký tự từ: '+file.name);
+    checkEnable(t);toast('✅ Đã đọc file thành công','success');
+  }catch(e){setES(t,'err','❌ '+e.message);toast('❌ '+e.message,'error')}
+}
+
+function clearFile(t){
+  document.getElementById('fp-'+t).classList.remove('show');
+  document.getElementById('uzbox-'+t).style.display='';
+  document.getElementById('tx-'+t).value='';
+  document.getElementById('tx-'+t).classList.remove('has-content');
+  document.getElementById('es-'+t).className='extract-status';
+  toolTexts[t]='';checkEnable(t);
+}
+
+function setES(t,type,msg){
+  const el=document.getElementById('es-'+t);if(!el)return;
+  el.className='extract-status show '+type;
+  const ico=type==='loading'?'<div class="spin"></div>':type==='done'?'<span>✅</span>':'<span>❌</span>';
+  el.innerHTML=ico+`<span>${msg}</span>`;
+}
+function checkEnable(t){
+  const has=(document.getElementById('tx-'+t)?.value||'').trim().length>0;
+  const btn=document.getElementById('runBtn-'+t);
+  if(btn)btn.disabled=!has;
+}
+
+// ── FILE READERS ──
+function readTxt(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>res(e.target.result);r.onerror=()=>rej(new Error('Không đọc được TXT'));r.readAsText(f,'UTF-8')})}
+async function readPdf(f){
+  if(typeof pdfjsLib==='undefined') throw new Error('Thư viện PDF chưa tải, thử lại');
+  const ab=await f.arrayBuffer();const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+  let txt='';
+  for(let i=1;i<=pdf.numPages;i++){const pg=await pdf.getPage(i);const c=await pg.getTextContent();txt+=c.items.map(s=>s.str).join(' ')+'\n\n'}
+  return txt.trim();
+}
+async function readDocx(f){
+  if(typeof mammoth==='undefined') throw new Error('Thư viện DOCX chưa tải, thử lại');
+  const ab=await f.arrayBuffer();const r=await mammoth.extractRawText({arrayBuffer:ab});return r.value.trim();
+}
+function fmtSize(b){return b<1024?b+'B':b<1048576?(b/1024).toFixed(1)+'KB':(b/1048576).toFixed(1)+'MB'}
+
+// ── USAGE ──
+function checkUsage(){
+  if(CU){
+    if(CU.role==='admin') return true;
+    const us=S.get('users')||[];const i=us.findIndex(x=>x.username===CU.username);
+    if(i===-1) return false;
+    us[i].usage=(us[i].usage||0)+1;S.set('users',us);CU.usage=us[i].usage;S.set('currentUser',CU);
+  }else{
+    const u=S.get('guestUsage')||0;
+    if(u>=20){document.getElementById('limitOv').classList.add('show');return false}
+    S.set('guestUsage',u+1);
+  }
+  S.set('totalUsage',(S.get('totalUsage')||0)+1);
+  const td=S.get('todayUsage')||{date:today(),count:0};
+  S.set('todayUsage',td.date===today()?{date:td.date,count:td.count+1}:{date:today(),count:1});
+  updateUsage();updateStats();return true;
+}
+
+// ── GEMINI ──
+async function gemini(prompt){
+  const key=localStorage.getItem('geminiApiKey');
+  if(!key){toast('⚠️ Chưa nhập API Key → Cài đặt','error');showPage('settings');return null}
+  const model=localStorage.getItem('geminiModel')||'gemini-2.0-flash';
+  const SYS=`Bạn là trợ lý AI chuyên nghiệp hỗ trợ công chức hành chính tại UBND xã Krông Búk, tỉnh Đắk Lắk.
+
+═══════════════════════════════════════════
+KIẾN THỨC BẮT BUỘC — ĐỌC KỸ TRƯỚC KHI SOẠN BẤT KỲ VĂN BẢN NÀO
+═══════════════════════════════════════════
+
+## 1. MÔ HÌNH CHÍNH QUYỀN ĐỊA PHƯƠNG HIỆN HÀNH
+Việt Nam hiện thực hiện mô hình chính quyền địa phương 2 CẤP: TỈNH và XÃ.
+❌ CẤP HUYỆN ĐÃ BỊ BÃI BỎ HOÀN TOÀN.
+❌ TUYỆT ĐỐI KHÔNG dùng: "UBND huyện", "Phòng ban huyện", "HĐND huyện", "Chi cục thuộc huyện", "Huyện ủy" hay bất kỳ cụm từ nào liên quan đến cấp huyện.
+
+## 2. CƠ CẤU TỔ CHỨC UBND XÃ KRÔNG BÚK (theo Nghị định 150/2025/NĐ-CP)
+
+### A. CÁC PHÒNG CHUYÊN MÔN THUỘC UBND XÃ (3 phòng):
+1. Văn phòng HĐND và UBND xã
+   - Chức năng: Tham mưu giúp việc chung cho HĐND và UBND, phụ trách lĩnh vực văn phòng, tư pháp, đối ngoại, chương trình công tác
+   - Ký hiệu văn bản: VP
+2. Phòng Kinh tế
+   - Chức năng: Quản lý nhà nước về kinh tế, tài chính, nông-lâm-ngư nghiệp, khoa học công nghệ và đổi mới sáng tạo
+   - Ký hiệu văn bản: PKT
+3. Phòng Văn hóa - Xã hội
+   - Chức năng: Phụ trách y tế, giáo dục, văn hóa, thể thao, lao động - thương binh và xã hội, phúc lợi
+   - Ký hiệu văn bản: PVHXH
+
+### B. CÁC CƠ QUAN KHÁC THUỘC UBND XÃ:
+- Trung tâm Phục vụ hành chính công cấp xã: Tiếp nhận và giải quyết thủ tục hành chính, dịch vụ công cho người dân
+
+### C. CƠ QUAN DÂN CỬ:
+- Hội đồng nhân dân (HĐND) xã Krông Búk
+  + Ban Pháp chế: Phụ trách thi hành pháp luật, an ninh trật tự
+  + Ban Kinh tế - Xã hội: Phụ trách kinh tế, ngân sách, văn hóa xã hội
+- Ủy ban nhân dân (UBND) xã Krông Búk: gồm Chủ tịch, Phó Chủ tịch và các Ủy viên UBND
+
+### D. ĐƠN VỊ SỰ NGHIỆP VÀ KHỐI ĐẶC THÙ:
+- Trạm Y tế xã Krông Búk
+- Trường Mầm non, Trường Tiểu học, Trường THCS trên địa bàn xã
+- Công an xã Krông Búk
+- Ban Chỉ huy Quân sự xã Krông Búk
+
+### E. NHỮNG GÌ KHÔNG CÒN TỒN TẠI TẠI CẤP XÃ:
+❌ Không còn "công chức Địa chính" độc lập — đã thuộc Phòng Kinh tế
+❌ Không còn "công chức Tư pháp - Hộ tịch" độc lập — đã thuộc Văn phòng HĐND-UBND
+❌ Không còn "công chức Văn hóa - Xã hội" độc lập — đã thuộc Phòng VH-XH
+❌ Không còn chức danh "Trưởng/Phó công chức chuyên môn" riêng lẻ theo kiểu cũ
+
+## 3. CÁC SỞ NGÀNH CẤP TỈNH ĐẮK LẮK (sau khi sáp nhập)
+Khi soạn văn bản gửi lên cấp trên, CHỈ dùng tên các Sở sau:
+
+| Tên Sở/Cơ quan | Lĩnh vực phụ trách |
+|---|---|
+| Sở Nội vụ | Tổ chức bộ máy, biên chế, CBCCVC, CCHC, tín ngưỡng, tôn giáo, văn thư-lưu trữ |
+| Sở Tư pháp | Xây dựng & thẩm định VBQPPL, PBGDPL, hành chính tư pháp, bổ trợ tư pháp |
+| Sở Tài chính | Tài chính, ngân sách nhà nước, thuế, phí, lệ phí, tài sản công |
+| Sở Công Thương | Công nghiệp, thương mại nội địa, xuất nhập khẩu, xúc tiến thương mại |
+| Sở Nông nghiệp và Môi trường | Nông-lâm-thủy-ngư nghiệp, phát triển nông thôn, đất đai, tài nguyên nước, khoáng sản, môi trường, khí tượng thủy văn |
+| Sở Xây dựng | Quy hoạch xây dựng, kiến trúc, đầu tư xây dựng, phát triển đô thị, hạ tầng kỹ thuật, nhà ở |
+| Sở Văn hóa, Thể thao và Du lịch | Di sản văn hóa, nghệ thuật, TDTT quần chúng, thể thao thành tích cao, du lịch, gia đình |
+| Sở Khoa học và Công nghệ | Nghiên cứu KH, phát triển công nghệ, sở hữu trí tuệ, tiêu chuẩn đo lường chất lượng |
+| Sở Giáo dục và Đào tạo | Giáo dục mầm non, phổ thông, thường xuyên, cơ sở giáo dục nghề nghiệp |
+| Sở Y tế | Khám chữa bệnh, y tế dự phòng, ATVSTP, dược, mỹ phẩm, trang thiết bị y tế |
+| Sở Dân tộc và Tôn giáo | Chính sách dân tộc, định canh định cư, đồng bào thiểu số, quản lý nhà nước về tôn giáo |
+| Thanh tra tỉnh | Thanh tra, giải quyết khiếu nại tố cáo, phòng chống tham nhũng tiêu cực |
+| Văn phòng UBND tỉnh | Tham mưu tổng hợp cho UBND, Chủ tịch UBND tỉnh |
+
+## 4. THỂ THỨC VĂN BẢN HÀNH CHÍNH (theo Nghị định 30/2020/NĐ-CP)
+- Tên cơ quan ban hành: UBND XÃ KRÔNG BÚK
+- Tỉnh: TỈNH ĐẮK LẮK (không có cấp huyện ở giữa)
+- Số hiệu văn bản: [số thứ tự]/[năm]-UBND (VD: 15/2025-UBND)
+- Địa danh ký văn bản: Krông Búk, ngày ... tháng ... năm ...
+- Nơi nhận: Chỉ ghi cơ quan cấp TỈNH hoặc cơ quan ngang cấp XÃ, KHÔNG ghi cơ quan huyện
+- Chữ ký: [Chức vụ], [Họ và tên] — để trống để công chức tự điền
+
+## 5. QUY TẮC BẮT BUỘC KHI SOẠN VĂN BẢN
+✅ Luôn dùng: "UBND xã Krông Búk", "tỉnh Đắk Lắk"
+✅ Gửi cấp trên: Chỉ gửi thẳng lên Sở/ngành tỉnh hoặc UBND tỉnh
+✅ Các phòng chuyên môn ký là: Trưởng phòng [tên phòng] — để trống tên người ký
+❌ KHÔNG BAO GIỜ viết: "huyện", "quận", "thị xã" trong văn bản hành chính
+❌ KHÔNG BAO GIỜ bịa tên lãnh đạo — để trống hoặc ghi [Họ và tên]
+❌ KHÔNG dùng tên Sở cũ trước sáp nhập (VD: "Sở Tài nguyên và Môi trường" đã sáp nhập vào "Sở Nông nghiệp và Môi trường")
+
+Trả lời bằng tiếng Việt, chuyên nghiệp, chuẩn xác. Không bịa thông tin.`;
+  const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({system_instruction:{parts:[{text:SYS}]},contents:[{parts:[{text:prompt}]}]})
+  });
+  if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Lỗi API')}
+  const d=await r.json();return d.candidates?.[0]?.content?.parts?.[0]?.text||'';
+}
+
+// ── RUN ──
+async function run(t){
+  if(!checkUsage()) return;
+  const tx=(document.getElementById('tx-'+t)?.value||'').trim();
+  if(!tx){toast('⚠️ Chưa có nội dung','error');return}
+  const sel=id=>document.getElementById(id)?.value||'';
+  const tn={'cong-van':'Công văn','to-trinh':'Tờ trình','quyet-dinh':'Quyết định','thong-bao':'Thông báo','bao-cao':'Báo cáo','ke-hoach':'Kế hoạch','bien-ban':'Biên bản'};
+  const rm={full:'toàn diện (chính tả, thể thức NĐ30, nội dung)',spelling:'chính tả',format:'thể thức NĐ30',content:'nội dung câu từ'};
+  const sm={short:'3-5 điểm',medium:'~1 trang A4',detailed:'chi tiết đầy đủ'};
+  const cm={'hanh-chinh':'văn bản hành chính','bao-cao':'báo cáo','kien-nghi':'kiến nghị'};
+  const tr={'vi-en':'Việt→Anh','en-vi':'Anh→Việt'};
+  const P={
+    review:`Rà soát ${rm[sel('sel-review')]||'toàn diện'} văn bản sau. Chỉ từng lỗi, vị trí, đề xuất sửa. Nhận xét tổng thể:\n\n---\n${tx}\n---`,
+    draft:`Soạn ${tn[sel('sel-draft')]||'văn bản'} của UBND xã Krông Búk, tỉnh Đắk Lắk theo Nghị định 30/2020. Yêu cầu/mẫu:\n\n---\n${tx}\n---`,
+    summary:`Tóm tắt ${sm[sel('sel-summary')]||'3-5 điểm'} văn bản:\n\n---\n${tx}\n---`,
+    legal:`Tra cứu căn cứ pháp lý (luật, nghị định, thông tư) liên quan vấn đề trong văn bản sau:\n\n---\n${tx}\n---`,
+    procedure:`Trả lời về thủ tục hành chính cấp xã: "${tx}". Nêu: hồ sơ, trình tự, thời gian, lệ phí.`,
+    convert:`Chuyển sang ${cm[sel('sel-convert')]||'văn bản hành chính'} của UBND xã Krông Búk, tỉnh Đắk Lắk:\n\n---\n${tx}\n---`,
+    translate:`Dịch ${tr[sel('sel-translate')]||'sang tiếng Anh'}, phong cách trang trọng:\n\n---\n${tx}\n---`,
+    meeting:`Soạn biên bản họp UBND xã Krông Búk, tỉnh Đắk Lắk từ ghi chú:\n\n---\n${tx}\n---\nCần đầy đủ: thành phần, nội dung, kết luận, phân công, ký xác nhận.`
+  };
+  const rb=document.getElementById('rb-'+t),rt=document.getElementById('rt-'+t);
+  rb.classList.add('show');
+  rt.innerHTML='<div class="loading-ai"><div class="spin-lg"></div> AI đang xử lý...</div>';
+  try{const res=await gemini(P[t]);if(res){rt.textContent=res;toast('✅ Hoàn thành!','success')}}
+  catch(e){rt.textContent='❌ Lỗi: '+e.message;toast('❌ '+e.message,'error')}
+}
+
+// ── EXPORT ──
+async function xword(t){
+  const tx=document.getElementById('rt-'+t)?.textContent;
+  if(!tx||tx.includes('AI đang xử lý')){toast('⚠️ Chưa có kết quả','error');return}
+  if(typeof docx==='undefined'){toast('⚠️ Thư viện chưa tải','error');return}
+  const{Document,Packer,Paragraph,TextRun,AlignmentType}=docx;
+  const lines=tx.split('\n').filter(l=>l.trim());
+  const doc=new Document({sections:[{children:[
+    new Paragraph({children:[new TextRun({text:'Công cụ hỗ trợ công chức cấp xã',bold:true,size:28})],alignment:AlignmentType.CENTER,spacing:{after:80}}),
+    new Paragraph({children:[new TextRun({text:'Phát triển bởi Trần Văn Tiến · 0973.141.747 · Xã Krông Búk, tỉnh Đắk Lắk',size:18,color:'888888'})],alignment:AlignmentType.CENTER,spacing:{after:300}}),
+    ...lines.map(l=>new Paragraph({children:[new TextRun({text:l,size:24})],spacing:{after:110}})),
+    new Paragraph({children:[new TextRun({text:`Xuất ngày ${new Date().toLocaleDateString('vi-VN')}`,size:16,color:'aaaaaa'})],alignment:AlignmentType.RIGHT,spacing:{before:400}})
+  ]}]});
+  const blob=await Packer.toBlob(doc);
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`KetQua_${t}_${Date.now()}.docx`;a.click();
+  toast('📄 Đã xuất Word!','success');
+}
+function cp(t){const tx=document.getElementById('rt-'+t)?.textContent;if(tx)navigator.clipboard.writeText(tx).then(()=>toast('📋 Đã sao chép!','success'))}
+
+// ── ADMIN ──
+function updateAdmin(){
+  const users=S.get('users')||[];
+  const list=document.getElementById('uList');if(!list)return;
+  list.innerHTML=users.map((u,i)=>`<li class="uitem"><div class="uav">${u.username[0].toUpperCase()}</div><div class="uinf"><div class="unm">${u.username}${u.role==='admin'?' 👑':''}</div><div class="umt">${u.dept||'—'} · ${u.usage||0} lượt</div></div>${u.role!=='admin'?`<button class="btn btn-red btn-sm" onclick="delUser(${i})">🗑️</button>`:''}</li>`).join('');
+  document.getElementById('adUsers').textContent=users.length;
+  document.getElementById('adTotal').textContent=S.get('totalUsage')||0;
+  document.getElementById('adGuest').textContent=S.get('guestUsage')||0;
+  const td=S.get('todayUsage')||{count:0};
+  document.getElementById('adToday').textContent=td.date===today()?td.count:0;
+}
+function createUser(){
+  const u=document.getElementById('nu').value.trim(),p=document.getElementById('np').value.trim();
+  if(!u||!p){toast('⚠️ Nhập đủ tên và mật khẩu','error');return}
+  const users=S.get('users')||[];
+  if(users.find(x=>x.username===u)){toast('⚠️ Tên đã tồn tại','error');return}
+  users.push({username:u,password:p,role:'user',usage:0,dept:'Người dùng'});S.set('users',users);
+  document.getElementById('nu').value='';document.getElementById('np').value='';
+  updateAdmin();toast('✅ Đã tạo: '+u,'success');
+}
+function delUser(i){
+  const users=S.get('users')||[];if(users[i]?.role==='admin'){toast('⚠️ Không xóa Admin','error');return}
+  if(!confirm(`Xóa "${users[i].username}"?`)) return;
+  users.splice(i,1);S.set('users',users);updateAdmin();toast('🗑️ Đã xóa','success');
+}
+
+// ── SETTINGS ──
+function saveKey(){const k=document.getElementById('akIn').value.trim();if(!k){toast('⚠️ Nhập API Key','error');return}localStorage.setItem('geminiApiKey',k);document.getElementById('akIn').value='';document.getElementById('apiSt').textContent='🔑 Đã lưu';toast('✅ Đã lưu API Key','success')}
+function saveModel(){localStorage.setItem('geminiModel',document.getElementById('modelSel').value);toast('✅ Đã lưu model','success')}
+async function testApi(){
+  const st=document.getElementById('apiSt');st.textContent='⏳ Đang kiểm tra...';
+  try{const r=await gemini('Trả lời đúng 1 từ: OK');st.textContent=r?'✅ Kết nối thành công':'❌ Không phản hồi'}
+  catch(e){st.textContent='❌ '+e.message}
+}
+
+// ── TOAST ──
+function toast(msg,type=''){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');
+  clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ── CLOCK ──
+setInterval(()=>{const n=new Date();const el=document.getElementById('clock');if(el)el.textContent='⏰ '+n.toLocaleTimeString('vi-VN')},1000);
+
+// ── BOOT ──
+init();updateUI();
+if(!CU) setTimeout(showAuth,700);
+</script>
+</body>
+</html>
