@@ -379,7 +379,27 @@ select:focus{border-color:var(--blue)}
 .cinfo{background:var(--bg4);border-radius:10px;padding:13px 16px;text-align:left;margin-bottom:16px}
 .cinfo p{font-size:12px;color:var(--text);margin:4px 0}
 
-/* ── TOAST ── */
+/* ── PROGRESS AI ── */
+.ai-progress{padding:20px;display:flex;flex-direction:column;gap:14px}
+.ai-progress-title{font-size:13px;font-weight:600;color:var(--white);display:flex;align-items:center;gap:8px}
+.ai-progress-title .spin-lg{flex-shrink:0}
+.ai-steps{display:flex;flex-direction:column;gap:8px}
+.ai-step{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);transition:all .3s}
+.ai-step.active{color:var(--white)}
+.ai-step.done{color:var(--green)}
+.ai-step.waiting{color:var(--muted2)}
+.ai-step-dot{
+  width:20px;height:20px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;transition:all .3s;
+  background:var(--bg5);border:1.5px solid var(--border);
+}
+.ai-step.active .ai-step-dot{background:rgba(59,130,246,.2);border-color:var(--blue);animation:pulse-dot 1s ease-in-out infinite}
+.ai-step.done .ai-step-dot{background:rgba(16,185,129,.2);border-color:var(--green)}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,.4)}50%{box-shadow:0 0 0 5px rgba(59,130,246,.0)}}
+.ai-progress-bar{height:3px;background:var(--bg5);border-radius:2px;overflow:hidden;margin-top:4px}
+.ai-progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--teal));border-radius:2px;transition:width .8s ease;width:0%}
+.ai-elapsed{font-size:11px;color:var(--muted2);margin-top:2px}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--bg3);border:1px solid var(--border2);color:var(--white);padding:12px 16px;border-radius:10px;font-size:12px;font-weight:500;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:9999;transform:translateY(60px);opacity:0;transition:all .25s;max-width:280px}
 .toast.show{transform:translateY(0);opacity:1}
 .toast.success{border-color:rgba(16,185,129,.4)}
@@ -414,6 +434,58 @@ select:focus{border-color:var(--blue)}
   .agrid{grid-template-columns:1fr}
   .page{padding:16px}
 }
+
+/* ── CHAT FOLLOW-UP ── */
+.chat-area{margin-top:16px;border-top:1px solid var(--border);padding-top:16px}
+.chat-history{max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+.chat-msg{padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.7;max-width:90%}
+.chat-msg.user{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.2);color:var(--white);align-self:flex-end;margin-left:auto}
+.chat-msg.ai{background:var(--bg4);border:1px solid var(--border2);color:var(--text);align-self:flex-start}
+.chat-msg.ai strong{color:var(--white)}
+.chat-msg.loading{color:var(--muted);font-style:italic}
+.chat-input-row{display:flex;gap:8px}
+.chat-input{flex:1;padding:10px 13px;background:var(--bg4);border:1px solid var(--border2);border-radius:10px;font-size:13px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);outline:none;resize:none;min-height:42px;max-height:120px}
+.chat-input:focus{border-color:var(--blue)}
+.chat-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.chat-sug{background:var(--bg4);border:1px solid var(--border2);color:var(--muted);padding:4px 10px;border-radius:16px;font-size:11px;cursor:pointer;transition:all .18s;font-family:'Be Vietnam Pro',sans-serif}
+.chat-sug:hover{border-color:var(--blue);color:var(--blue)}
+
+/* ── HISTORY PAGE ── */
+.hist-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.hist-filter{background:var(--bg3);border:1px solid var(--border);color:var(--muted);padding:6px 12px;border-radius:20px;font-size:12px;cursor:pointer;transition:all .18s;font-family:'Be Vietnam Pro',sans-serif}
+.hist-filter.active,.hist-filter:hover{background:rgba(59,130,246,.15);border-color:var(--blue);color:var(--blue)}
+.hist-list{display:flex;flex-direction:column;gap:10px}
+.hist-item{background:var(--bg3);border:1px solid var(--border);border-radius:13px;padding:16px;cursor:pointer;transition:all .2s}
+.hist-item:hover{border-color:var(--blue);transform:translateX(3px)}
+.hist-item-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.hist-tool-badge{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;padding:3px 8px;border-radius:5px;background:rgba(59,130,246,.15);color:var(--blue)}
+.hist-time{font-size:11px;color:var(--muted);margin-left:auto}
+.hist-user{font-size:11px;color:var(--gold)}
+.hist-preview{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hist-req{font-size:12px;color:var(--text);margin-bottom:4px;font-weight:500}
+.hist-empty{text-align:center;padding:40px;color:var(--muted2);font-size:13px}
+
+/* ── SAVE STATUS ── */
+.save-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);padding:3px 8px;border-radius:5px}
+.save-status.saving{color:var(--gold)}
+.save-status.saved{color:var(--green)}
+.save-status.err{color:var(--red)}
+.rcontent{white-space:normal!important}
+.rcontent p{margin:6px 0;line-height:1.8}
+.rcontent h2{font-size:14px;font-weight:700;color:var(--white);margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.rcontent h3{font-size:13px;font-weight:700;color:var(--blue);margin:12px 0 6px}
+.rcontent strong{color:var(--white)}
+.rcontent ul,.rcontent ol{padding-left:18px;margin:6px 0}
+.rcontent li{margin:5px 0;line-height:1.7}
+.rcontent hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+.rcontent code{background:var(--bg4);padding:1px 6px;border-radius:4px;font-size:12px;color:var(--teal);font-family:monospace}
+.err-block{background:rgba(229,62,62,.05);border:1px solid rgba(229,62,62,.15);border-radius:10px;padding:12px 14px;margin:10px 0}
+.err-pos{font-size:11px;color:var(--muted);margin-bottom:5px;font-style:italic}
+.err-issue{font-size:13px;color:var(--text);margin-bottom:5px}
+.err-fix{font-size:13px;color:var(--green);display:flex;align-items:flex-start;gap:6px}
+.err-fix::before{content:'→ Sửa:';font-weight:700;flex-shrink:0;color:var(--green)}
+.summary-box{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:14px 16px;margin-top:16px}
+.summary-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -470,6 +542,9 @@ select:focus{border-color:var(--blue)}
     </button>
     <button class="sb-item" onclick="showPage('principles')" data-page="principles">
       <span class="si-icon">📜</span> Nguyên tắc AI
+    </button>
+    <button class="sb-item" onclick="showPage('history')" data-page="history">
+      <span class="si-icon">🕐</span> Lịch sử tra cứu
     </button>
     <button class="sb-item" onclick="showPage('settings')" data-page="settings">
       <span class="si-icon">🔧</span> Cài đặt
@@ -821,6 +896,30 @@ select:focus{border-color:var(--blue)}
     </div>
   </div>
 
+  <!-- HISTORY PAGE -->
+  <div class="page" id="page-history">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div>
+        <h2 style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--white);margin-bottom:4px">🕐 Lịch sử tra cứu</h2>
+        <p style="font-size:12px;color:var(--muted)">Xem lại các kết quả AI đã xử lý</p>
+      </div>
+      <button class="btn btn-red btn-sm" onclick="clearHistory()">🗑️ Xóa lịch sử</button>
+    </div>
+    <div class="hist-filters" id="histFilters">
+      <button class="hist-filter active" onclick="filterHistory('all',this)">Tất cả</button>
+      <button class="hist-filter" onclick="filterHistory('review',this)">🔍 Rà soát</button>
+      <button class="hist-filter" onclick="filterHistory('draft',this)">✍️ Soạn thảo</button>
+      <button class="hist-filter" onclick="filterHistory('summary',this)">📋 Tóm tắt</button>
+      <button class="hist-filter" onclick="filterHistory('legal',this)">⚖️ Pháp lý</button>
+      <button class="hist-filter" onclick="filterHistory('procedure',this)">📝 Thủ tục</button>
+      <button class="hist-filter" onclick="filterHistory('translate',this)">🌐 Dịch thuật</button>
+      <button class="hist-filter" onclick="filterHistory('meeting',this)">📅 Biên bản</button>
+    </div>
+    <div class="hist-list" id="histList">
+      <div class="hist-empty">Chưa có lịch sử tra cứu</div>
+    </div>
+  </div>
+
 </main>
 
 <!-- SETTINGS PASSWORD OVERLAY -->
@@ -873,7 +972,7 @@ select:focus{border-color:var(--blue)}
 if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 // ── GOOGLE SHEETS BACKEND ──
-const GS_URL='https://script.google.com/macros/s/AKfycbwkyuNvIYarSak6RMJMOiqkTFIlq4Dy8y0CqCz3bWyj9vvCXphSOK20kEmHxyhmAChG/exec';
+const GS_URL='https://script.google.com/macros/s/AKfycbxDUNT9LD0Fv8BUsswBPhyL1IjO1V-Gq_w1yg_PwQE9D6kpF1NVguEm30wE78N2S0SL/exec';
 
 async function gsCall(data){
   try{
@@ -999,17 +1098,18 @@ function toggleSidebar(){const sb=document.getElementById('sidebar');const ov=do
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sbOverlay').classList.remove('show')}
 
 // ── PAGES ──
-const pageTitles={home:'Tổng quan',tools:'Công cụ AI',admin:'Quản trị',settings:'Cài đặt',principles:'Nguyên tắc sử dụng AI'};
+const pageTitles={home:'Tổng quan',tools:'Công cụ AI',admin:'Quản trị',settings:'Cài đặt',principles:'Nguyên tắc sử dụng AI',history:'Lịch sử tra cứu'};
 function showPage(n){
   if(n==='settings'){showSettings();return}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.sb-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+n)?.classList.add('active');
-  document.querySelector(`[data-page="${n}"]`)?.classList.add('active');
+  document.querySelector('[data-page="'+n+'"]')?.classList.add('active');
   document.getElementById('headerTitle').textContent=pageTitles[n]||'';
   closeSidebar();
   if(n==='admin')updateAdmin();
   if(n==='home')updateStats();
+  if(n==='history')showHistory();
 }
 
 // ── TOOL CONFIG ──
@@ -1091,12 +1191,22 @@ function openTool(t){
         '<div class="rbox" id="rb-'+t+'">'+
           '<div class="rhead">'+
             '<span>📊 Kết quả</span>'+
-            '<div class="rhbtns">'+
+            '<div style="display:flex;align-items:center;gap:7px">'+
+              '<span class="save-status" id="ss-'+t+'"></span>'+
               '<button class="btn btn-sm btn-teal" onclick="xword(\''+t+'\')">📄 Xuất Word</button>'+
               '<button class="btn btn-sm btn-outline" onclick="cp(\''+t+'\')">📋 Sao chép</button>'+
             '</div>'+
           '</div>'+
           '<div class="rcontent" id="rt-'+t+'"></div>'+
+          '<div class="chat-area" id="chat-'+t+'" style="display:none">'+
+            '<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">💬 Hỏi thêm AI về kết quả này</div>'+
+            '<div class="chat-suggestions" id="chatSug-'+t+'"></div>'+
+            '<div class="chat-history" id="chatHist-'+t+'"></div>'+
+            '<div class="chat-input-row">'+
+              '<textarea class="chat-input" id="chatIn-'+t+'" placeholder="VD: Sửa lại đoạn 2... Viết ngắn hơn... Thêm ví dụ..." rows="1" onkeydown="chatKeydown(event,\''+t+'\')"></textarea>'+
+              '<button class="btn btn-primary btn-sm" onclick="sendChat(\''+t+'\')">Gửi</button>'+
+            '</div>'+
+          '</div>'+
         '</div>'+
       '</div>'+
     '</div>';
@@ -1315,7 +1425,7 @@ async function run(t){
 
   const rb=document.getElementById('rb-'+t),rt=document.getElementById('rt-'+t);
   rb.classList.add('show');
-  rt.innerHTML='<div class="loading-ai"><div class="spin-lg"></div> AI đang xử lý...</div>';
+  let stopProgress=null;
 
   // Chuẩn bị file Base64 nếu có
   let fileBase64=null, fileMime=null;
@@ -1324,12 +1434,13 @@ async function run(t){
     try{
       fileBase64=await fileToBase64(toolFiles[t]);
       fileMime=toolFiles[t].type||'application/pdf';
-      toast('📄 File sẵn sàng — AI đang đọc...','success');
     }catch(e){
       toast('⚠️ Không đọc được file, dùng text thay thế','error');
     }
-    rt.innerHTML='<div class="loading-ai"><div class="spin-lg"></div> AI đang đọc và xử lý...</div>';
   }
+
+  // Bắt đầu hiển thị progress
+  stopProgress=showProgress(rt, t, toolFiles[t]?'AI đang đọc file và xử lý...':'AI đang xử lý...');
 
   const sel=id=>document.getElementById(id)?.value||'';
   const tn={'cong-van':'Công văn','to-trinh':'Tờ trình','quyet-dinh':'Quyết định','thong-bao':'Thông báo','bao-cao':'Báo cáo','ke-hoach':'Kế hoạch','bien-ban':'Biên bản'};
@@ -1382,14 +1493,28 @@ async function run(t){
 
   try{
     const res=await gemini(P[t], fileBase64, fileMime);
-    if(res){rt.textContent=res;toast('✅ Hoàn thành!','success')}
-  }catch(e){rt.textContent='❌ Lỗi: '+e.message;toast('❌ '+e.message,'error')}
+    if(stopProgress) stopProgress();
+    if(res){
+      rt.innerHTML=renderMD(res);
+      toast('✅ Hoàn thành!','success');
+      // Lưu lịch sử local
+      saveHistory(t, req, res);
+      // Lưu lên Google Sheets
+      saveToSheet(t, req, res);
+      // Hiện chat follow-up
+      const chatEl=document.getElementById('chat-'+t);
+      if(chatEl){chatEl.style.display='';initChat(t);}
+    }
+  }catch(e){
+    if(stopProgress) stopProgress();
+    rt.textContent='❌ Lỗi: '+e.message;toast('❌ '+e.message,'error')
+  }
 }
 
 // ── EXPORT ──
 async function xword(t){
-  const tx=document.getElementById('rt-'+t)?.textContent;
-  if(!tx||tx.includes('AI đang xử lý')){toast('⚠️ Chưa có kết quả','error');return}
+  const tx=document.getElementById('rt-'+t)?.innerText||document.getElementById('rt-'+t)?.textContent;
+  if(!tx||tx.includes('AI đang')){toast('⚠️ Chưa có kết quả','error');return}
   if(typeof docx==='undefined'){toast('⚠️ Thư viện chưa tải','error');return}
   const{Document,Packer,Paragraph,TextRun,AlignmentType}=docx;
   const lines=tx.split('\n').filter(l=>l.trim());
@@ -1403,7 +1528,7 @@ async function xword(t){
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`KetQua_${t}_${Date.now()}.docx`;a.click();
   toast('📄 Đã xuất Word!','success');
 }
-function cp(t){const tx=document.getElementById('rt-'+t)?.textContent;if(tx)navigator.clipboard.writeText(tx).then(()=>toast('📋 Đã sao chép!','success'))}
+function cp(t){const el=document.getElementById('rt-'+t);if(el)navigator.clipboard.writeText(el.innerText||el.textContent).then(()=>toast('📋 Đã sao chép!','success'))}
 
 // ── ADMIN ──
 async function updateAdmin(){
@@ -1475,7 +1600,92 @@ async function testApi(){
   catch(e){st.textContent='❌ '+e.message}
 }
 
-// ── TOAST ──
+// ── PROGRESS INDICATOR ──
+const STEPS={
+  review:['Đọc và phân tích văn bản','Kiểm tra chính tả','Kiểm tra câu từ & diễn đạt','Tổng hợp kết quả'],
+  draft:['Phân tích yêu cầu','Xác định thể thức văn bản','Soạn thảo nội dung','Hoàn thiện văn bản'],
+  summary:['Đọc toàn bộ nội dung','Xác định ý chính','Tổng hợp và tóm tắt','Hoàn thiện bản tóm tắt'],
+  legal:['Phân tích vấn đề','Tra cứu luật và nghị định','Tra cứu thông tư hướng dẫn','Tổng hợp căn cứ pháp lý'],
+  procedure:['Xác định thủ tục cần tra cứu','Tra cứu quy định hiện hành','Kiểm tra hồ sơ, trình tự','Tổng hợp kết quả'],
+  convert:['Phân tích nội dung đầu vào','Xác định văn phong phù hợp','Chuyển đổi nội dung','Hoàn thiện văn bản'],
+  translate:['Phân tích văn bản gốc','Dịch nội dung chính','Kiểm tra thuật ngữ chuyên ngành','Hoàn thiện bản dịch'],
+  meeting:['Phân tích ghi chú cuộc họp','Xác định thành phần, nội dung','Soạn biên bản chính thức','Hoàn thiện biên bản'],
+};
+
+function showProgress(rt, t, extraMsg){
+  const steps=STEPS[t]||['Phân tích','Xử lý','Tổng hợp','Hoàn thiện'];
+  const start=Date.now();
+  let currentStep=0;
+
+  function render(step, pct){
+    const elapsed=((Date.now()-start)/1000).toFixed(1);
+    rt.innerHTML=
+      '<div class="ai-progress">'+
+        '<div class="ai-progress-title"><div class="spin-lg"></div>'+(extraMsg||'AI đang xử lý...')+'</div>'+
+        '<div class="ai-progress-bar"><div class="ai-progress-fill" style="width:'+pct+'%"></div></div>'+
+        '<div class="ai-steps">'+
+          steps.map((s,i)=>
+            '<div class="ai-step '+(i<step?'done':i===step?'active':'waiting')+'">'+
+              '<div class="ai-step-dot">'+(i<step?'✓':i===step?'●':'○')+'</div>'+
+              '<span>'+s+'</span>'+
+            '</div>'
+          ).join('')+
+        '</div>'+
+        '<div class="ai-elapsed">⏱ '+elapsed+' giây...</div>'+
+      '</div>';
+  }
+
+  render(0, 5);
+  // Tự động tiến bước theo thời gian ước tính
+  const totalTime=t==='review'?12000:t==='draft'?10000:8000;
+  const stepTime=totalTime/steps.length;
+  const intervals=[];
+  steps.forEach((_,i)=>{
+    if(i===0) return;
+    intervals.push(setTimeout(()=>{
+      currentStep=i;
+      render(i, Math.round((i/steps.length)*90));
+    }, stepTime*i));
+  });
+
+  // Cập nhật elapsed timer mỗi giây
+  const clockInterval=setInterval(()=>{
+    render(currentStep, Math.round((currentStep/steps.length)*90));
+  },1000);
+
+  // Trả về hàm stop để gọi khi xong
+  return function stop(){
+    intervals.forEach(clearTimeout);
+    clearInterval(clockInterval);
+  };
+}
+// ── MARKDOWN RENDERER ──
+function renderMD(text){
+  if(!text) return '';
+  let h=text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h2>$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/^---+$/gm,'<hr>')
+    // Nhận xét tổng thể box
+    .replace(/(NHẬN XÉT TỔNG THỂ[^\n]*)/g,'<div class="summary-box"><div class="summary-title">📊 $1</div>')
+    // Arrow err blocks - pos
+    .replace(/^→ Vị trí: (.+)$/gm,'<div class="err-block"><div class="err-pos">📍 $1</div>')
+    // Arrow err blocks - issue
+    .replace(/^→ Vấn đề: (.+)$/gm,'<div class="err-issue">⚠️ $1</div>')
+    // Arrow err blocks - fix (closes block)
+    .replace(/^→ (Đề xuất sửa|Sửa thành): (.+)$/gm,'<div class="err-fix">$2</div></div>')
+    // Bullet
+    .replace(/^- (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[^<]*<\/li>\n?)+/g,'<ul>$&</ul>')
+    // Paragraphs
+    .replace(/\n{2,}/g,'</p><p>')
+    .replace(/\n/g,'<br>');
+  return '<p>'+h+'</p>';
+}
+
 function toast(msg,type=''){
   const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+(type||'');
   clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),3000);
@@ -1483,6 +1693,179 @@ function toast(msg,type=''){
 
 // ── CLOCK ──
 setInterval(()=>{const n=new Date();const el=document.getElementById('clock');if(el)el.textContent='⏰ '+n.toLocaleTimeString('vi-VN')},1000);
+
+// ── HISTORY ──
+const HIST_KEY='aiHistory';
+const MAX_HIST=50;
+const TOOL_NAMES={review:'Rà soát',draft:'Soạn thảo',summary:'Tóm tắt',legal:'Pháp lý',procedure:'Thủ tục HC',convert:'Chuyển văn phong',translate:'Dịch thuật',meeting:'Biên bản họp'};
+
+function saveHistory(t, req, result){
+  try{
+    const hist=S.get(HIST_KEY)||[];
+    hist.unshift({
+      id:Date.now(),
+      tool:t,
+      toolName:TOOL_NAMES[t]||t,
+      req:req.slice(0,200),
+      result:result.slice(0,3000),
+      user:CU?.username||'Khách',
+      time:new Date().toLocaleString('vi-VN')
+    });
+    if(hist.length>MAX_HIST) hist.splice(MAX_HIST);
+    S.set(HIST_KEY,hist);
+  }catch(e){}
+}
+
+function saveToSheet(t, req, result){
+  if(!CU) return;
+  const ss=document.getElementById('ss-'+t);
+  if(ss){ss.className='save-status saving';ss.innerHTML='⏳ Đang lưu...'}
+  gsCall({
+    action:'saveLog',
+    username:CU.username,
+    dept:CU.dept||'',
+    tool:TOOL_NAMES[t]||t,
+    req:req.slice(0,500),
+    result:result.slice(0,1000),
+    time:new Date().toLocaleString('vi-VN')
+  }).then(r=>{
+    if(ss){
+      ss.className='save-status '+(r.ok?'saved':'err');
+      ss.innerHTML=r.ok?'✓ Đã lưu':'⚠️ Lưu thất bại';
+      setTimeout(()=>{if(ss)ss.innerHTML=''},3000);
+    }
+  });
+}
+
+let histFilter='all';
+function showHistory(){
+  const hist=S.get(HIST_KEY)||[];
+  const list=document.getElementById('histList');
+  if(!list) return;
+  const filtered=histFilter==='all'?hist:hist.filter(h=>h.tool===histFilter);
+  if(!filtered.length){
+    list.innerHTML='<div class="hist-empty">📭 Chưa có lịch sử'+(histFilter!=='all'?' cho công cụ này':'')+' </div>';
+    return;
+  }
+  list.innerHTML=filtered.map(h=>
+    '<div class="hist-item" onclick="openHistItem(\''+h.id+'\')">'+
+      '<div class="hist-item-head">'+
+        '<span class="hist-tool-badge">'+h.toolName+'</span>'+
+        '<span class="hist-user">👤 '+h.user+'</span>'+
+        '<span class="hist-time">'+h.time+'</span>'+
+      '</div>'+
+      '<div class="hist-req">'+escHtml(h.req.slice(0,100))+'</div>'+
+      '<div class="hist-preview">'+escHtml(h.result.slice(0,150))+'...</div>'+
+    '</div>'
+  ).join('');
+}
+
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+function filterHistory(f,el){
+  histFilter=f;
+  document.querySelectorAll('.hist-filter').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  showHistory();
+}
+
+function clearHistory(){
+  if(!confirm('Xóa toàn bộ lịch sử tra cứu?')) return;
+  S.del(HIST_KEY);showHistory();toast('🗑️ Đã xóa lịch sử','success');
+}
+
+// Mở lại kết quả lịch sử
+function openHistItem(id){
+  const hist=S.get(HIST_KEY)||[];
+  const item=hist.find(h=>h.id==id);
+  if(!item) return;
+  openTool(item.tool);
+  setTimeout(()=>{
+    const rt=document.getElementById('rt-'+item.tool);
+    const rb=document.getElementById('rb-'+item.tool);
+    const chatEl=document.getElementById('chat-'+item.tool);
+    if(rt){rt.innerHTML=renderMD(item.result);rb?.classList.add('show');}
+    if(chatEl) chatEl.style.display='';
+    toast('📂 Đã mở lại kết quả cũ','success');
+  },200);
+}
+
+// ── CHAT FOLLOW-UP ──
+const chatContexts={};// lưu lịch sử chat theo tool
+
+const CHAT_SUGGESTIONS={
+  review:['Sửa lại đoạn có lỗi','Giải thích lỗi chi tiết hơn','Viết lại toàn bộ đoạn đã sửa'],
+  draft:['Viết ngắn hơn','Thêm căn cứ pháp lý','Chỉnh lại phần mở đầu','Thêm phần kiến nghị'],
+  summary:['Tóm tắt ngắn hơn nữa','Liệt kê dạng gạch đầu dòng','Nhấn mạnh điểm quan trọng nhất'],
+  legal:['Giải thích điều luật này','Văn bản nào mới nhất','Áp dụng cụ thể thế nào'],
+  procedure:['Giải thích rõ hơn bước này','Thời gian giải quyết bao lâu','Có thể nộp online không'],
+  convert:['Viết trang trọng hơn','Ngắn gọn hơn','Thêm lý do cụ thể'],
+  translate:['Dịch lại tự nhiên hơn','Giải thích thuật ngữ này','Dịch phần tiếp theo'],
+  meeting:['Thêm phần phân công','Viết kết luận rõ hơn','Bổ sung thành phần dự họp'],
+};
+
+function initChat(t){
+  if(!chatContexts[t]) chatContexts[t]=[];
+  const sugEl=document.getElementById('chatSug-'+t);
+  if(sugEl&&!sugEl.children.length){
+    (CHAT_SUGGESTIONS[t]||[]).forEach(s=>{
+      const btn=document.createElement('button');
+      btn.className='chat-sug';btn.textContent=s;
+      btn.onclick=()=>{
+        const inp=document.getElementById('chatIn-'+t);
+        if(inp){inp.value=s;inp.focus()}
+      };
+      sugEl.appendChild(btn);
+    });
+  }
+}
+
+function chatKeydown(e,t){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendChat(t)}
+}
+
+async function sendChat(t){
+  const inp=document.getElementById('chatIn-'+t);
+  const msg=(inp?.value||'').trim();
+  if(!msg){toast('⚠️ Nhập câu hỏi','error');return}
+  inp.value='';
+
+  const histEl=document.getElementById('chatHist-'+t);
+  if(!histEl) return;
+
+  // Hiện message user
+  histEl.innerHTML+='<div class="chat-msg user">'+escHtml(msg)+'</div>';
+  const loadEl=document.createElement('div');
+  loadEl.className='chat-msg ai loading';loadEl.textContent='⏳ AI đang trả lời...';
+  histEl.appendChild(loadEl);
+  histEl.scrollTop=histEl.scrollHeight;
+
+  // Lấy kết quả hiện tại làm context
+  const prevResult=document.getElementById('rt-'+t)?.innerText||'';
+  if(!chatContexts[t]) chatContexts[t]=[];
+  chatContexts[t].push({role:'user',content:msg});
+
+  const contextPrompt='Kết quả AI vừa trả lời:\n---\n'+prevResult.slice(0,2000)+'\n---\n\nLịch sử chat:\n'+
+    chatContexts[t].slice(-6).map(m=>m.role==='user'?'Người dùng: '+m.content:'AI: '+m.content).join('\n')+
+    '\n\nYêu cầu mới: '+msg;
+
+  try{
+    const res=await gemini(contextPrompt);
+    loadEl.remove();
+    chatContexts[t].push({role:'ai',content:res||''});
+    const aiEl=document.createElement('div');
+    aiEl.className='chat-msg ai';
+    aiEl.innerHTML=renderMD(res||'Không có phản hồi');
+    histEl.appendChild(aiEl);
+    histEl.scrollTop=histEl.scrollHeight;
+  }catch(e){
+    loadEl.textContent='❌ Lỗi: '+e.message;
+    loadEl.className='chat-msg ai';
+  }
+}
+
+// ── PAGENAMES UPDATE ──
+const pageTitlesExtra={history:'Lịch sử tra cứu'};
 
 // ── BOOT ──
 init();updateUI();
