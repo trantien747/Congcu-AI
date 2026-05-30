@@ -2014,29 +2014,50 @@ async function sendChat(t){
   const inp=document.getElementById('chatIn-'+t);
   const msg=(inp?.value||'').trim();
   if(!msg){toast('⚠️ Nhập câu hỏi','error');return}
-  inp.value='';
+  inp.value='';inp.style.height='42px';
 
   const histEl=document.getElementById('chatHist-'+t);
   if(!histEl) return;
 
   // Hiện message user
-  histEl.innerHTML+='<div class="chat-msg user">'+escHtml(msg)+'</div>';
+  const userEl=document.createElement('div');
+  userEl.className='chat-msg user';
+  userEl.textContent=msg;
+  histEl.appendChild(userEl);
+
+  // Hiện loading với animation các bước
   const loadEl=document.createElement('div');
-  loadEl.className='chat-msg ai loading';loadEl.textContent='⏳ AI đang trả lời...';
+  loadEl.className='chat-msg ai';
+  loadEl.innerHTML=
+    '<div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px">'+
+    '<div class="spin" style="width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>'+
+    '<span id="chatStatus-'+t+'">Đang phân tích câu hỏi...</span>'+
+    '</div>';
   histEl.appendChild(loadEl);
   histEl.scrollTop=histEl.scrollHeight;
+
+  // Animate status text
+  const statuses=['Đang phân tích câu hỏi...','Đang xử lý ngữ cảnh...','AI đang soạn câu trả lời...','Đang hoàn thiện...'];
+  let si=0;
+  const statusEl=document.getElementById('chatStatus-'+t);
+  const statusInterval=setInterval(()=>{
+    si=(si+1)%statuses.length;
+    if(statusEl) statusEl.textContent=statuses[si];
+  },1800);
 
   // Lấy kết quả hiện tại làm context
   const prevResult=document.getElementById('rt-'+t)?.innerText||'';
   if(!chatContexts[t]) chatContexts[t]=[];
   chatContexts[t].push({role:'user',content:msg});
 
-  const contextPrompt='Kết quả AI vừa trả lời:\n---\n'+prevResult.slice(0,2000)+'\n---\n\nLịch sử chat:\n'+
-    chatContexts[t].slice(-6).map(m=>m.role==='user'?'Người dùng: '+m.content:'AI: '+m.content).join('\n')+
+  const contextPrompt=
+    'Kết quả AI vừa trả lời:\n---\n'+prevResult.slice(0,2000)+'\n---\n\n'+
+    'Lịch sử chat:\n'+chatContexts[t].slice(-6).map(m=>m.role==='user'?'Người dùng: '+m.content:'AI: '+m.content).join('\n')+
     '\n\nYêu cầu mới: '+msg;
 
   try{
     const res=await gemini(contextPrompt);
+    clearInterval(statusInterval);
     loadEl.remove();
     chatContexts[t].push({role:'ai',content:res||''});
     const aiEl=document.createElement('div');
@@ -2045,8 +2066,8 @@ async function sendChat(t){
     histEl.appendChild(aiEl);
     histEl.scrollTop=histEl.scrollHeight;
   }catch(e){
-    loadEl.textContent='❌ Lỗi: '+e.message;
-    loadEl.className='chat-msg ai';
+    clearInterval(statusInterval);
+    loadEl.innerHTML='<span style="color:var(--red);font-size:12px">❌ Lỗi: '+e.message+'</span>';
   }
 }
 
