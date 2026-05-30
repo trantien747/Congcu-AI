@@ -873,7 +873,7 @@ select:focus{border-color:var(--blue)}
 if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 // ── GOOGLE SHEETS BACKEND ──
-const GS_URL='https://script.google.com/macros/s/AKfycbyqeQ8E40PY49qzPHwuELdqOjt5iyEZiqcL2yRsqqHnj8L_YsviwY0Pw1TVvkWv3YXp/exec';
+const GS_URL='https://script.google.com/macros/s/AKfycbxTGfxbfaacr3cX4kkQUpVkIwhNvIinSrSpVMYFxwHZb1LitJ1h8H6RnxW-pDfGSJDH/exec';
 
 async function gsCall(data){
   try{
@@ -968,8 +968,22 @@ function updateStats(){
   const td=S.get('todayUsage')||{count:0};
   const el=document.getElementById('statToday');if(el)el.textContent=td.date===today()?td.count:0;
   const el2=document.getElementById('statTotal');if(el2)el2.textContent=S.get('totalUsage')||0;
-  // Lấy số user từ GS không đồng bộ ở đây, dùng cache
   const el3=document.getElementById('statUsers');if(el3&&S.get('gsUserCount'))el3.textContent=S.get('gsUserCount');
+  // Kéo stats mới từ GS (không đồng bộ)
+  gsCall({action:'getStats'}).then(function(r){
+    if(!r.ok) return;
+    if(el2) el2.textContent=r.total||0;
+    if(el) el.textContent=r.today||0;
+    S.set('totalUsage',r.total||0);
+    const td2=S.get('todayUsage')||{date:today(),count:0};
+    S.set('todayUsage',{date:td2.date,count:r.today||0});
+  });
+  gsCall({action:'getUsers'}).then(function(r){
+    if(!r.ok) return;
+    const cnt=(r.users||[]).length;
+    S.set('gsUserCount',cnt);
+    const el3b=document.getElementById('statUsers');if(el3b)el3b.textContent=cnt;
+  });
 }
 
 // ── SIDEBAR ──
