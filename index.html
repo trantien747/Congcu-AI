@@ -873,7 +873,7 @@ select:focus{border-color:var(--blue)}
 if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 // ── GOOGLE SHEETS BACKEND ──
-const GS_URL='https://script.google.com/macros/s/AKfycbxTGfxbfaacr3cX4kkQUpVkIwhNvIinSrSpVMYFxwHZb1LitJ1h8H6RnxW-pDfGSJDH/exec';
+const GS_URL='https://script.google.com/macros/s/AKfycbwkyuNvIYarSak6RMJMOiqkTFIlq4Dy8y0CqCz3bWyj9vvCXphSOK20kEmHxyhmAChG/exec';
 
 async function gsCall(data){
   try{
@@ -942,7 +942,15 @@ async function doLogin(){
   if(loginBtn){loginBtn.textContent='🔑 Đăng nhập';loginBtn.disabled=false}
   if(!res.ok){document.getElementById('aerr').style.display='block';return}
   CU={username:res.username,role:res.role,dept:res.dept,usage:res.usage};
-  S.set('currentUser',CU);closeAuth();updateUI();toast('✅ Chào '+CU.username,'success');
+  S.set('currentUser',CU);closeAuth();updateUI();
+  toast('✅ Chào '+CU.username,'success');
+  // Tự động lấy API Key từ Sheet về thiết bị này
+  const kr=await gsCall({action:'getApiKey'});
+  if(kr.ok&&kr.apiKey){
+    localStorage.setItem('geminiApiKey',kr.apiKey);
+    if(kr.model) localStorage.setItem('geminiModel',kr.model);
+    toast('🔑 Đã tải API Key tự động!','success');
+  }
 }
 function handleLogout(){CU=null;S.del('currentUser');updateUI();toast('👋 Đã đăng xuất','success');showPage('home')}
 
@@ -1453,7 +1461,21 @@ async function delUser(username){
 }
 
 // ── SETTINGS ──
-function saveKey(){const k=document.getElementById('akIn').value.trim();if(!k){toast('⚠️ Nhập API Key','error');return}localStorage.setItem('geminiApiKey',k);document.getElementById('akIn').value='';document.getElementById('apiSt').textContent='🔑 Đã lưu';toast('✅ Đã lưu API Key','success')}
+function saveKey(){
+  const k=document.getElementById('akIn').value.trim();
+  if(!k){toast('⚠️ Nhập API Key','error');return}
+  localStorage.setItem('geminiApiKey',k);
+  document.getElementById('akIn').value='';
+  document.getElementById('apiSt').textContent='🔑 Đã lưu';
+  toast('✅ Đã lưu API Key vào thiết bị','success');
+  // Nếu là admin thì lưu lên Sheet để các thiết bị khác dùng
+  if(CU?.role==='admin'){
+    gsCall({action:'saveApiKey',username:CU.username,apiKey:k,model:localStorage.getItem('geminiModel')||'gemini-2.5-flash'})
+      .then(r=>{
+        if(r.ok) toast('☁️ Đã đồng bộ Key lên Google Sheets!','success');
+      });
+  }
+}
 function saveModel(){localStorage.setItem('geminiModel',document.getElementById('modelSel').value);toast('✅ Đã lưu model','success')}
 async function testApi(){
   const st=document.getElementById('apiSt');st.textContent='⏳ Đang kiểm tra...';
