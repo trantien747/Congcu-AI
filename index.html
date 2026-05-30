@@ -799,6 +799,7 @@ select:focus{border-color:var(--blue)}
       </p>
       <div id="keyList" style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
       <button class="btn btn-green btn-sm" onclick="addKeySlot()" id="addKeyBtn">➕ Thêm key</button>
+      <button class="btn btn-primary btn-sm" onclick="saveKey()" style="margin-left:8px">💾 Lưu & Đồng bộ lên Sheet</button>
       <div style="margin-top:12px;padding:10px 14px;background:var(--bg4);border-radius:8px;font-size:12px;color:var(--muted)">
         💡 <strong style="color:var(--white)">Mẹo:</strong> Tạo key từ nhiều tài khoản Google khác nhau để tối đa quota.
         Gemini 2.0 Flash: <strong style="color:var(--green)">1.500 req/ngày/key</strong> · 15 key = <strong style="color:var(--gold)">22.500 req/ngày</strong>
@@ -979,7 +980,7 @@ select:focus{border-color:var(--blue)}
 if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 // ── GOOGLE SHEETS BACKEND ──
-const GS_URL='https://script.google.com/macros/s/AKfycbxDUNT9LD0Fv8BUsswBPhyL1IjO1V-Gq_w1yg_PwQE9D6kpF1NVguEm30wE78N2S0SL/exec';
+const GS_URL='https://script.google.com/macros/s/AKfycbxNCAybCB-pz0y-Wncj_meN4P0cn1tDfp4_n0wKzPWkdGJmuj1Oy3sBioX5f_W4Q1KE/exec';
 
 async function gsCall(data){
   try{
@@ -1065,12 +1066,19 @@ async function doLogin(){
   CU={username:res.username,role:res.role,dept:res.dept,usage:res.usage};
   S.set('currentUser',CU);closeAuth();updateUI();
   toast('✅ Chào '+CU.username,'success');
-  // Tự động lấy API Key từ Sheet về thiết bị này
+  // Tự động lấy TẤT CẢ API Key từ Sheet về thiết bị này
   const kr=await gsCall({action:'getApiKey'});
-  if(kr.ok&&kr.apiKey){
-    localStorage.setItem('geminiApiKey',kr.apiKey);
+  if(kr.ok){
+    if(kr.keys&&kr.keys.length){
+      // Lấy được mảng key mới
+      saveKeys(kr.keys);
+      toast('🔑 Đã tải '+kr.keys.length+' API Key tự động!','success');
+    } else if(kr.apiKey){
+      // Fallback key đơn cũ
+      saveKeys([{key:kr.apiKey,uses:0,blocked:false}]);
+      toast('🔑 Đã tải API Key tự động!','success');
+    }
     if(kr.model) localStorage.setItem('geminiModel',kr.model);
-    toast('🔑 Đã tải API Key tự động!','success');
   }
 }
 function handleLogout(){CU=null;S.del('currentUser');updateUI();toast('👋 Đã đăng xuất','success');showPage('home')}
@@ -1732,16 +1740,24 @@ function removeKey(i){
 }
 
 function saveKey(){
-  // Lưu tất cả key hiện tại (đã được lưu real-time qua updateKey)
   const keys=getKeys().filter(k=>k.key);
+  if(!keys.length){toast('⚠️ Chưa có key nào','error');return}
   saveKeys(keys);
-  // Lưu key đầu lên Sheet
-  if(keys.length&&CU?.role==='admin'){
-    gsCall({action:'saveApiKey',username:CU.username,apiKey:keys[0].key,model:localStorage.getItem('geminiModel')||'gemini-2.5-flash'})
-      .then(r=>{if(r.ok)toast('☁️ Đã đồng bộ lên Sheet','success')});
+  // Lưu TẤT CẢ key lên Sheet nếu là admin
+  if(CU?.role==='admin'){
+    gsCall({
+      action:'saveApiKey',
+      username:CU.username,
+      keys:keys,// gửi toàn bộ mảng
+      model:localStorage.getItem('geminiModel')||'gemini-2.5-flash'
+    }).then(r=>{
+      if(r.ok) toast('☁️ Đã đồng bộ '+keys.length+' key lên Sheet!','success');
+      else toast('⚠️ Lưu Sheet thất bại: '+r.error,'error');
+    });
   }
+  const st=document.getElementById('apiSt');
+  if(st)st.textContent='🔑 '+keys.length+' key đã lưu';
   toast('✅ Đã lưu '+keys.length+' API Key','success');
-  document.getElementById('apiSt').textContent='🔑 '+keys.length+' key đã lưu';
 }
 function saveModel(){localStorage.setItem('geminiModel',document.getElementById('modelSel').value);toast('✅ Đã lưu model','success')}
 async function testApi(){
