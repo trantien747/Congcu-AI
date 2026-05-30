@@ -435,20 +435,77 @@ select:focus{border-color:var(--blue)}
   .page{padding:16px}
 }
 
-/* ── CHAT FOLLOW-UP ── */
-.chat-area{margin-top:16px;border-top:1px solid var(--border);padding-top:16px}
-.chat-history{max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
-.chat-msg{padding:10px 14px;border-radius:10px;font-size:13px;line-height:1.7;max-width:90%}
-.chat-msg.user{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.2);color:var(--white);align-self:flex-end;margin-left:auto}
-.chat-msg.ai{background:var(--bg4);border:1px solid var(--border2);color:var(--text);align-self:flex-start}
-.chat-msg.ai strong{color:var(--white)}
-.chat-msg.loading{color:var(--muted);font-style:italic}
-.chat-input-row{display:flex;gap:8px}
-.chat-input{flex:1;padding:10px 13px;background:var(--bg4);border:1px solid var(--border2);border-radius:10px;font-size:13px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);outline:none;resize:none;min-height:42px;max-height:120px}
+/* ── CHAT INLINE ── */
+.chat-area{margin-top:0;border-top:1px solid var(--border);padding-top:0}
+.chat-input-wrap{
+  display:flex;align-items:flex-end;gap:8px;
+  padding:12px 16px;background:var(--bg5);
+  border-top:1px solid var(--border);
+}
+.chat-input{
+  flex:1;padding:10px 13px;
+  background:var(--bg4);border:1px solid var(--border2);
+  border-radius:10px;font-size:13px;
+  font-family:'Be Vietnam Pro',sans-serif;
+  color:var(--text);outline:none;
+  resize:none;min-height:42px;max-height:120px;
+  line-height:1.5;
+}
 .chat-input:focus{border-color:var(--blue)}
-.chat-suggestions{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
-.chat-sug{background:var(--bg4);border:1px solid var(--border2);color:var(--muted);padding:4px 10px;border-radius:16px;font-size:11px;cursor:pointer;transition:all .18s;font-family:'Be Vietnam Pro',sans-serif}
+.chat-suggestions{
+  display:flex;flex-wrap:wrap;gap:6px;
+  padding:10px 16px 0;
+}
+.chat-sug{
+  background:var(--bg4);border:1px solid var(--border2);
+  color:var(--muted);padding:4px 11px;border-radius:16px;
+  font-size:11px;cursor:pointer;transition:all .18s;
+  font-family:'Be Vietnam Pro',sans-serif;
+}
 .chat-sug:hover{border-color:var(--blue);color:var(--blue)}
+.chat-label{
+  font-size:10px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;color:var(--muted);
+  padding:12px 16px 4px;display:flex;align-items:center;gap:6px;
+}
+.chat-history-log{
+  max-height:0;overflow:hidden;
+  transition:max-height .4s ease;
+}
+.chat-history-log.has-msgs{max-height:600px;overflow-y:auto}
+.chat-turn{border-top:1px solid var(--border);padding:14px 16px}
+.chat-turn-q{
+  font-size:12px;color:var(--muted);
+  display:flex;align-items:flex-start;gap:8px;margin-bottom:10px;
+}
+.chat-turn-q::before{
+  content:'👤';font-size:13px;flex-shrink:0;margin-top:1px;
+}
+.chat-turn-a{font-size:13px;color:var(--text);line-height:1.8}
+.chat-turn-a h2{font-size:14px;font-weight:700;color:var(--white);margin:12px 0 6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.chat-turn-a h3{font-size:13px;font-weight:700;color:var(--blue);margin:10px 0 5px}
+.chat-turn-a strong{color:var(--white)}
+.chat-turn-a ul,.chat-turn-a ol{padding-left:18px;margin:6px 0}
+.chat-turn-a li{margin:4px 0}
+.chat-turn-a .err-block{background:rgba(229,62,62,.05);border:1px solid rgba(229,62,62,.15);border-radius:8px;padding:10px 13px;margin:8px 0}
+.chat-turn-a .summary-box{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:12px 14px;margin-top:12px}
+
+/* ── RESULT DISPLAY ── */
+.rcontent{white-space:normal!important;font-size:13px;line-height:1.85;padding:20px}
+.rcontent h2{font-size:14px;font-weight:700;color:var(--white);margin:16px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.rcontent h3{font-size:13px;font-weight:700;color:var(--blue);margin:12px 0 6px}
+.rcontent strong{color:var(--white)}
+.rcontent ul,.rcontent ol{padding-left:18px;margin:6px 0}
+.rcontent li{margin:5px 0;line-height:1.7}
+.rcontent hr{border:none;border-top:1px solid var(--border);margin:14px 0}
+.rcontent code{background:var(--bg4);padding:1px 6px;border-radius:4px;font-size:12px;color:var(--teal)}
+.err-block{background:rgba(229,62,62,.05);border:1px solid rgba(229,62,62,.15);border-radius:10px;padding:12px 14px;margin:10px 0}
+.err-pos{font-size:11px;color:var(--muted);margin-bottom:5px;font-style:italic}
+.err-issue{font-size:13px;color:var(--text);margin-bottom:5px}
+.err-fix{font-size:13px;color:var(--green);display:flex;align-items:flex-start;gap:6px}
+.err-fix::before{content:'→ Sửa:';font-weight:700;flex-shrink:0;color:var(--green)}
+.summary-box{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:14px 16px;margin-top:16px}
+.summary-title{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--blue);margin-bottom:8px}
 
 /* ── HISTORY PAGE ── */
 .hist-filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
@@ -1255,12 +1312,12 @@ function openTool(t){
           '</div>'+
           '<div class="rcontent" id="rt-'+t+'"></div>'+
           '<div class="chat-area" id="chat-'+t+'" style="display:none">'+
-            '<div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">💬 Hỏi thêm AI về kết quả này</div>'+
             '<div class="chat-suggestions" id="chatSug-'+t+'"></div>'+
-            '<div class="chat-history" id="chatHist-'+t+'"></div>'+
-            '<div class="chat-input-row">'+
-              '<textarea class="chat-input" id="chatIn-'+t+'" placeholder="VD: Sửa lại đoạn 2... Viết ngắn hơn... Thêm ví dụ..." rows="1" onkeydown="chatKeydown(event,\''+t+'\')"></textarea>'+
-              '<button class="btn btn-primary btn-sm" onclick="sendChat(\''+t+'\')">Gửi</button>'+
+            '<div class="chat-history-log" id="chatLog-'+t+'"></div>'+
+            '<div class="chat-label">💬 Hỏi thêm hoặc yêu cầu chỉnh sửa</div>'+
+            '<div class="chat-input-wrap">'+
+              '<textarea class="chat-input" id="chatIn-'+t+'" placeholder="VD: Viết ngắn hơn · Sửa lại đoạn 2 · Thêm căn cứ pháp lý..." rows="1" onkeydown="chatKeydown(event,\''+t+'\')"></textarea>'+
+              '<button class="btn btn-primary btn-sm" onclick="sendChat(\''+t+'\')">↑ Gửi</button>'+
             '</div>'+
           '</div>'+
         '</div>'+
@@ -2143,40 +2200,38 @@ async function sendChat(t){
   if(!msg){toast('⚠️ Nhập câu hỏi','error');return}
   inp.value='';inp.style.height='42px';
 
-  const histEl=document.getElementById('chatHist-'+t);
-  if(!histEl) return;
+  const logEl=document.getElementById('chatLog-'+t);
+  const rt=document.getElementById('rt-'+t);
+  if(!logEl||!rt) return;
 
-  // Hiện message user
-  const userEl=document.createElement('div');
-  userEl.className='chat-msg user';
-  userEl.textContent=msg;
-  histEl.appendChild(userEl);
+  // Hiện log area với animation
+  logEl.classList.add('has-msgs');
 
-  // Hiện loading với animation các bước
-  const loadEl=document.createElement('div');
-  loadEl.className='chat-msg ai';
-  loadEl.innerHTML=
-    '<div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px">'+
-    '<div class="spin" style="width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>'+
-    '<span id="chatStatus-'+t+'">Đang phân tích câu hỏi...</span>'+
+  // Tạo turn mới
+  const turnId='ans-'+Date.now();
+  const turnEl=document.createElement('div');
+  turnEl.className='chat-turn';
+  turnEl.innerHTML=
+    '<div class="chat-turn-q">'+escHtml(msg)+'</div>'+
+    '<div class="chat-turn-a" id="'+turnId+'">'+
+      '<div style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px;padding:4px 0">'+
+        '<div class="spin" style="width:13px;height:13px;border:2px solid var(--border2);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div>'+
+        '<span id="chatSt-'+t+'">Đang phân tích...</span>'+
+      '</div>'+
     '</div>';
-  histEl.appendChild(loadEl);
-  histEl.scrollTop=histEl.scrollHeight;
+  logEl.appendChild(turnEl);
+  logEl.scrollTop=logEl.scrollHeight;
 
-  // Animate status text
-  const statuses=['Đang phân tích câu hỏi...','Đang xử lý ngữ cảnh...','AI đang soạn câu trả lời...','Đang hoàn thiện...'];
+  // Animate status
+  const statuses=['Đang phân tích câu hỏi...','Đang xử lý ngữ cảnh...','AI đang soạn trả lời...','Đang hoàn thiện...'];
   let si=0;
-  const statusEl=document.getElementById('chatStatus-'+t);
-  const statusInterval=setInterval(()=>{
-    si=(si+1)%statuses.length;
-    if(statusEl) statusEl.textContent=statuses[si];
-  },1800);
+  const stEl=document.getElementById('chatSt-'+t);
+  const stInterval=setInterval(()=>{si=(si+1)%statuses.length;if(stEl)stEl.textContent=statuses[si]},1800);
 
-  // Lấy kết quả hiện tại làm context
-  const prevResult=document.getElementById('rt-'+t)?.innerText||'';
+  // Context
+  const prevResult=rt?.innerText||'';
   if(!chatContexts[t]) chatContexts[t]=[];
   chatContexts[t].push({role:'user',content:msg});
-
   const contextPrompt=
     'Kết quả AI vừa trả lời:\n---\n'+prevResult.slice(0,2000)+'\n---\n\n'+
     'Lịch sử chat:\n'+chatContexts[t].slice(-6).map(m=>m.role==='user'?'Người dùng: '+m.content:'AI: '+m.content).join('\n')+
@@ -2184,19 +2239,16 @@ async function sendChat(t){
 
   try{
     const res=await gemini(contextPrompt);
-    clearInterval(statusInterval);
-    loadEl.remove();
+    clearInterval(stInterval);
     chatContexts[t].push({role:'ai',content:res||''});
-    const aiEl=document.createElement('div');
-    aiEl.className='chat-msg ai';
-    aiEl.innerHTML=renderMD(res||'Không có phản hồi');
-    histEl.appendChild(aiEl);
-    histEl.scrollTop=histEl.scrollHeight;
-    // Lưu chat tiếp lên Sheet
+    const ansEl=document.getElementById(turnId);
+    if(ansEl) ansEl.innerHTML=renderMD(res||'Không có phản hồi');
+    logEl.scrollTop=logEl.scrollHeight;
     saveHistory(t, msg, res||'', 'chat');
   }catch(e){
-    clearInterval(statusInterval);
-    loadEl.innerHTML='<span style="color:var(--red);font-size:12px">❌ Lỗi: '+e.message+'</span>';
+    clearInterval(stInterval);
+    const ansEl=document.getElementById(turnId);
+    if(ansEl) ansEl.innerHTML='<span style="color:var(--red);font-size:12px">❌ Lỗi: '+e.message+'</span>';
   }
 }
 
