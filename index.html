@@ -1761,17 +1761,28 @@ function saveKey(){
 }
 function saveModel(){localStorage.setItem('geminiModel',document.getElementById('modelSel').value);toast('✅ Đã lưu model','success')}
 async function testApi(){
-  const st=document.getElementById('apiSt');st.textContent='⏳ Đang kiểm tra...';
+  const st=document.getElementById('apiSt');
+  st.textContent='⏳ Đang kiểm tra tất cả key...';
   const keys=getKeys().filter(k=>k.key);
   if(!keys.length){st.textContent='❌ Chưa có key nào';return}
-  let ok=0,fail=0;
-  for(const k of keys.slice(0,3)){// Test tối đa 3 key đầu
+  let ok=0,fail=0,quota=0;
+  for(const k of keys){
     try{
       await callGeminiAPI(k.key,'Trả lời đúng 1 từ: OK');
       ok++;
-    }catch(e){fail++}
+    }catch(e){
+      if(e.message.includes('quota')||e.message.includes('RESOURCE_EXHAUSTED')||e.message.includes('429')){
+        quota++;
+      } else {
+        fail++;
+      }
+    }
   }
-  st.textContent='✅ '+ok+' key hoạt động'+(fail?' · ❌ '+fail+' lỗi':'');
+  let msg='';
+  if(ok) msg+='✅ '+ok+' key hoạt động';
+  if(quota) msg+=(msg?' · ':'')+'⛔ '+quota+' hết quota';
+  if(fail) msg+=(msg?' · ':'')+'❌ '+fail+' lỗi key';
+  st.textContent=msg||'❌ Tất cả key đều lỗi';
   renderKeyList();
 }
 
