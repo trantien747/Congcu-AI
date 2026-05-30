@@ -980,7 +980,7 @@ select:focus{border-color:var(--blue)}
 if(typeof pdfjsLib!=='undefined') pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 // ── GOOGLE SHEETS BACKEND ──
-const GS_URL='https://script.google.com/macros/s/AKfycbxNCAybCB-pz0y-Wncj_meN4P0cn1tDfp4_n0wKzPWkdGJmuj1Oy3sBioX5f_W4Q1KE/exec';
+const GS_URL='https://script.google.com/macros/s/AKfycbwH4EZ45XikffFN_UmwKWA4JQ0ODTErAV9jZrQH35IB4IWjZ5jnL7krsmwjzqVC15rQ/exec';
 
 async function gsCall(data){
   try{
@@ -1103,22 +1103,48 @@ function updateUsage(){
 }
 function updateStats(){
   const td=S.get('todayUsage')||{count:0};
-  const el=document.getElementById('statToday');if(el)el.textContent=td.date===today()?td.count:0;
-  const el2=document.getElementById('statTotal');if(el2)el2.textContent=S.get('totalUsage')||0;
-  const el3=document.getElementById('statUsers');if(el3&&S.get('gsUserCount'))el3.textContent=S.get('gsUserCount');
-  // Kéo stats mới từ GS (không đồng bộ)
+  const realToday=td.date===today()?td.count:0;
+  const realTotal=S.get('totalUsage')||0;
+  const realUsers=(S.get('gsUserCount')||1);
+
+  // Admin thấy số thật, user thường thấy số "đẹp"
+  let showToday, showTotal;
+  if(CU?.role==='admin'){
+    showToday=realToday;
+    showTotal=realTotal;
+  } else {
+    // Tạo offset theo ngày — mỗi ngày khác nhau nhưng nhất quán
+    const dateNum=parseInt(new Date().toLocaleDateString('vi-VN').replace(/\//g,''));
+    const seed=(dateNum%7); // 0-6
+    const offsets=[295,198,320,247,312,178,265];
+    const todayOffset=offsets[seed];
+    const totalBase=1247; // Base tổng lượt
+    showToday=realToday+todayOffset;
+    showTotal=realTotal+totalBase;
+  }
+
+  const el=document.getElementById('statToday');if(el)el.textContent=showToday;
+  const el2=document.getElementById('statTotal');if(el2)el2.textContent=showTotal.toLocaleString('vi-VN');
+
+  // Kéo stats thật từ GS (không đồng bộ)
   gsCall({action:'getStats'}).then(function(r){
     if(!r.ok) return;
-    if(el2) el2.textContent=r.total||0;
-    if(el) el.textContent=r.today||0;
     S.set('totalUsage',r.total||0);
     const td2=S.get('todayUsage')||{date:today(),count:0};
     S.set('todayUsage',{date:td2.date,count:r.today||0});
-  });
-  gsCall({action:'getUsers'}).then(function(r){
-    if(!r.ok) return;
-    const cnt=(r.users||[]).length;
+    const cnt=(r.userCount||0)+1;
     S.set('gsUserCount',cnt);
+    // Cập nhật lại với số thật (admin) hoặc số đẹp (user)
+    if(CU?.role==='admin'){
+      if(el) el.textContent=r.today||0;
+      if(el2) el2.textContent=(r.total||0).toLocaleString('vi-VN');
+    } else {
+      const dateNum=parseInt(new Date().toLocaleDateString('vi-VN').replace(/\//g,''));
+      const seed=(dateNum%7);
+      const offsets=[295,198,320,247,312,178,265];
+      if(el) el.textContent=(r.today||0)+offsets[seed];
+      if(el2) el2.textContent=((r.total||0)+1247).toLocaleString('vi-VN');
+    }
     const el3b=document.getElementById('statUsers');if(el3b)el3b.textContent=cnt;
   });
 }
@@ -1560,10 +1586,8 @@ async function run(t){
     if(res){
       rt.innerHTML=renderMD(res);
       toast('✅ Hoàn thành!','success');
-      // Lưu lịch sử local
-      saveHistory(t, req, res);
-      // Lưu lên Google Sheets
-      saveToSheet(t, req, res);
+      // Lưu lịch sử local + Sheet
+      saveHistory(t, req, res, 'main');
       // Hiện chat follow-up
       const chatEl=document.getElementById('chat-'+t);
       if(chatEl){chatEl.style.display='';initChat(t);}
@@ -1880,42 +1904,60 @@ function toast(msg,type=''){
 // ── CLOCK ──
 setInterval(()=>{const n=new Date();const el=document.getElementById('clock');if(el)el.textContent='⏰ '+n.toLocaleTimeString('vi-VN')},1000);
 
-// ── HISTORY ──
-const HIST_KEY='aiHistory';
+// ── HISTORY (Google Sheets) ──
+const HIST_KEY='aiHistory'; // Giữ local cache
 const MAX_HIST=50;
 const TOOL_NAMES={review:'Rà soát',draft:'Soạn thảo',summary:'Tóm tắt',legal:'Pháp lý',procedure:'Thủ tục HC',convert:'Chuyển văn phong',translate:'Dịch thuật',meeting:'Biên bản họp'};
 
-function saveHistory(t, req, result){
+// Session ID để gom nhóm main + chat cùng nhau
+let currentSessionId='';
+
+function genSessionId(){return 'sess_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
+
+function saveHistory(t, req, result, type){
+  type=type||'main';
+  if(type==='main') currentSessionId=genSessionId();
+
+  const item={
+    id:Date.now(),
+    tool:t,
+    toolName:TOOL_NAMES[t]||t,
+    req:req.slice(0,300),
+    result:result.slice(0,3000),
+    user:CU?.username||'Khách',
+    dept:CU?.dept||'',
+    time:new Date().toLocaleString('vi-VN'),
+    type:type,
+    sessionId:currentSessionId
+  };
+
+  // Lưu local cache
   try{
     const hist=S.get(HIST_KEY)||[];
-    hist.unshift({
-      id:Date.now(),
-      tool:t,
-      toolName:TOOL_NAMES[t]||t,
-      req:req.slice(0,200),
-      result:result.slice(0,3000),
-      user:CU?.username||'Khách',
-      time:new Date().toLocaleString('vi-VN')
-    });
+    hist.unshift(item);
     if(hist.length>MAX_HIST) hist.splice(MAX_HIST);
     S.set(HIST_KEY,hist);
   }catch(e){}
+
+  // Lưu lên Sheet
+  if(CU) saveToSheet(t, req, result, type);
 }
 
-function saveToSheet(t, req, result){
-  if(!CU) return;
+function saveToSheet(t, req, result, type){
   const ss=document.getElementById('ss-'+t);
-  if(ss){ss.className='save-status saving';ss.innerHTML='⏳ Đang lưu...'}
+  if(ss&&type==='main'){ss.className='save-status saving';ss.innerHTML='⏳ Đang lưu...'}
   gsCall({
     action:'saveLog',
-    username:CU.username,
-    dept:CU.dept||'',
+    username:CU?.username||'Khách',
+    dept:CU?.dept||'',
     tool:TOOL_NAMES[t]||t,
+    type:type||'main',
     req:req.slice(0,500),
-    result:result.slice(0,1000),
-    time:new Date().toLocaleString('vi-VN')
+    result:result.slice(0,1500),
+    time:new Date().toLocaleString('vi-VN'),
+    sessionId:currentSessionId
   }).then(r=>{
-    if(ss){
+    if(ss&&type==='main'){
       ss.className='save-status '+(r.ok?'saved':'err');
       ss.innerHTML=r.ok?'✓ Đã lưu':'⚠️ Lưu thất bại';
       setTimeout(()=>{if(ss)ss.innerHTML=''},3000);
@@ -1924,29 +1966,120 @@ function saveToSheet(t, req, result){
 }
 
 let histFilter='all';
-function showHistory(){
-  const hist=S.get(HIST_KEY)||[];
+let histLoading=false;
+
+async function showHistory(){
   const list=document.getElementById('histList');
   if(!list) return;
-  const filtered=histFilter==='all'?hist:hist.filter(h=>h.tool===histFilter);
-  if(!filtered.length){
-    list.innerHTML='<div class="hist-empty">📭 Chưa có lịch sử'+(histFilter!=='all'?' cho công cụ này':'')+' </div>';
+
+  // Nếu chưa đăng nhập → dùng local cache
+  if(!CU){
+    renderHistLocal(list);
     return;
   }
+
+  // Đã đăng nhập → load từ Sheet
+  list.innerHTML='<div class="hist-empty"><div class="spin-lg" style="margin:0 auto 10px"></div>Đang tải lịch sử...</div>';
+  histLoading=true;
+
+  const res=await gsCall({
+    action:'getHistory',
+    username:CU.username,
+    dept:CU.dept||'',
+    role:CU.role
+  });
+  histLoading=false;
+
+  if(!res.ok){
+    list.innerHTML='<div class="hist-empty">❌ Không tải được lịch sử</div>';
+    return;
+  }
+
+  const items=res.items||[];
+  if(!items.length){
+    list.innerHTML='<div class="hist-empty">📭 Chưa có lịch sử tra cứu</div>';
+    return;
+  }
+
+  // Lọc theo tool
+  const filtered=histFilter==='all'?items:items.filter(h=>h.tool===TOOL_NAMES[histFilter]||h.tool===histFilter);
+  if(!filtered.length){
+    list.innerHTML='<div class="hist-empty">📭 Không có lịch sử cho bộ lọc này</div>';
+    return;
+  }
+
+  // Gom nhóm theo sessionId
+  const sessions={};
+  filtered.forEach(item=>{
+    const sid=item.sessionId||item.id;
+    if(!sessions[sid]) sessions[sid]=[];
+    sessions[sid].push(item);
+  });
+
+  let html='';
+  Object.values(sessions).forEach(group=>{
+    const main=group.find(i=>i.type==='main')||group[0];
+    const chats=group.filter(i=>i.type==='chat');
+    html+=
+      '<div class="hist-item" onclick="openHistItemSheet(this)" '+
+        'data-req="'+escHtml(main.req||'')+'" '+
+        'data-result="'+escHtml(main.result||'')+'" '+
+        'data-tool="'+escHtml(main.tool||'')+'">'+
+        '<div class="hist-item-head">'+
+          '<span class="hist-tool-badge">'+escHtml(main.tool||'')+'</span>'+
+          (CU?.role==='admin'?'<span class="hist-user">👤 '+escHtml(main.username||'')+(main.dept?' · '+escHtml(main.dept):'')+'</span>':'')+
+          '<span class="hist-time">'+escHtml(String(main.time||''))+'</span>'+
+        '</div>'+
+        '<div class="hist-req">'+escHtml((main.req||'').slice(0,100))+'</div>'+
+        '<div class="hist-preview">'+escHtml((main.result||'').slice(0,150))+'...</div>'+
+        (chats.length?'<div style="font-size:11px;color:var(--muted);margin-top:6px">💬 '+chats.length+' câu hỏi tiếp theo</div>':'')+
+      '</div>';
+  });
+  list.innerHTML=html;
+}
+
+function renderHistLocal(list){
+  const hist=S.get(HIST_KEY)||[];
+  const filtered=histFilter==='all'?hist:hist.filter(h=>h.tool===histFilter||h.toolName===TOOL_NAMES[histFilter]);
+  if(!filtered.length){list.innerHTML='<div class="hist-empty">📭 Chưa có lịch sử</div>';return}
   list.innerHTML=filtered.map(h=>
-    '<div class="hist-item" onclick="openHistItem(\''+h.id+'\')">'+
+    '<div class="hist-item" onclick="openHistItemSheet(this)" '+
+      'data-req="'+escHtml(h.req||'')+'" '+
+      'data-result="'+escHtml(h.result||'')+'" '+
+      'data-tool="'+escHtml(h.tool||'')+'">'+
       '<div class="hist-item-head">'+
-        '<span class="hist-tool-badge">'+h.toolName+'</span>'+
-        '<span class="hist-user">👤 '+h.user+'</span>'+
-        '<span class="hist-time">'+h.time+'</span>'+
+        '<span class="hist-tool-badge">'+(h.toolName||h.tool)+'</span>'+
+        '<span class="hist-time">'+escHtml(h.time||'')+'</span>'+
       '</div>'+
-      '<div class="hist-req">'+escHtml(h.req.slice(0,100))+'</div>'+
-      '<div class="hist-preview">'+escHtml(h.result.slice(0,150))+'...</div>'+
+      '<div class="hist-req">'+escHtml((h.req||'').slice(0,100))+'</div>'+
+      '<div class="hist-preview">'+escHtml((h.result||'').slice(0,150))+'...</div>'+
     '</div>'
   ).join('');
 }
 
-function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function openHistItemSheet(el){
+  const tool=el.dataset.tool;
+  const req=el.dataset.req;
+  const result=el.dataset.result;
+  // Map tool name về tool key
+  const toolKey=Object.keys(TOOL_NAMES).find(k=>TOOL_NAMES[k]===tool)||tool;
+  if(!toolKey) return;
+  openTool(toolKey);
+  setTimeout(()=>{
+    const rt=document.getElementById('rt-'+toolKey);
+    const rb=document.getElementById('rb-'+toolKey);
+    const chatEl=document.getElementById('chat-'+toolKey);
+    const txEl=document.getElementById('tx-'+toolKey);
+    if(rt){rt.innerHTML=renderMD(result);rb?.classList.add('show')}
+    if(txEl) txEl.value=req;
+    if(chatEl){chatEl.style.display='';initChat(toolKey)}
+    toast('📂 Đã mở lại kết quả cũ','success');
+  },300);
+}
+
+function escHtml(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 function filterHistory(f,el){
   histFilter=f;
@@ -1955,25 +2088,19 @@ function filterHistory(f,el){
   showHistory();
 }
 
-function clearHistory(){
-  if(!confirm('Xóa toàn bộ lịch sử tra cứu?')) return;
-  S.del(HIST_KEY);showHistory();toast('🗑️ Đã xóa lịch sử','success');
-}
-
-// Mở lại kết quả lịch sử
-function openHistItem(id){
-  const hist=S.get(HIST_KEY)||[];
-  const item=hist.find(h=>h.id==id);
-  if(!item) return;
-  openTool(item.tool);
-  setTimeout(()=>{
-    const rt=document.getElementById('rt-'+item.tool);
-    const rb=document.getElementById('rb-'+item.tool);
-    const chatEl=document.getElementById('chat-'+item.tool);
-    if(rt){rt.innerHTML=renderMD(item.result);rb?.classList.add('show');}
-    if(chatEl) chatEl.style.display='';
-    toast('📂 Đã mở lại kết quả cũ','success');
-  },200);
+async function clearHistory(){
+  if(!confirm('Xóa toàn bộ lịch sử tra cứu'+(CU?.role==='admin'?' của tất cả người dùng':'')+' ?')) return;
+  // Xóa local
+  S.del(HIST_KEY);
+  // Xóa trên Sheet
+  if(CU){
+    const res=await gsCall({action:'deleteHistory',username:CU.username,role:CU.role});
+    if(res.ok) toast('🗑️ Đã xóa lịch sử','success');
+    else toast('⚠️ Xóa thất bại: '+res.error,'error');
+  } else {
+    toast('🗑️ Đã xóa lịch sử','success');
+  }
+  showHistory();
 }
 
 // ── CHAT FOLLOW-UP ──
@@ -2065,6 +2192,8 @@ async function sendChat(t){
     aiEl.innerHTML=renderMD(res||'Không có phản hồi');
     histEl.appendChild(aiEl);
     histEl.scrollTop=histEl.scrollHeight;
+    // Lưu chat tiếp lên Sheet
+    saveHistory(t, msg, res||'', 'chat');
   }catch(e){
     clearInterval(statusInterval);
     loadEl.innerHTML='<span style="color:var(--red);font-size:12px">❌ Lỗi: '+e.message+'</span>';
