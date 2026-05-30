@@ -1005,6 +1005,56 @@ function openTool(t){
   document.querySelectorAll('.sb-item').forEach(x=>x.classList.remove('active'));
   document.querySelector(`[data-tool="${t}"]`)?.classList.add('active');
   const cfg=TOOLS[t];
+  const PROMPTS={
+    review:[
+      {label:'Rà soát toàn bộ',text:'Rà soát toàn bộ văn bản đính kèm về chính tả, thể thức và nội dung. Liệt kê từng lỗi và đề xuất sửa.'},
+      {label:'Kiểm tra thể thức',text:'Kiểm tra thể thức văn bản đính kèm theo Nghị định 30/2020/NĐ-CP. Chỉ rõ phần nào chưa đúng.'},
+      {label:'Kiểm tra chính tả',text:'Kiểm tra lỗi chính tả và dùng từ trong văn bản đính kèm.'},
+      {label:'Nhận xét nội dung',text:'Nhận xét về nội dung, bố cục và sự logic của văn bản đính kèm.'},
+    ],
+    draft:[
+      {label:'Công văn đề nghị',text:'Soạn công văn đề nghị [tên Sở/cơ quan] về việc [nêu vấn đề]. Lý do: [nêu lý do].'},
+      {label:'Báo cáo tình hình',text:'Soạn báo cáo tình hình [lĩnh vực] tháng [tháng] năm [năm] của UBND xã Krông Búk gửi [cơ quan nhận].'},
+      {label:'Thông báo họp',text:'Soạn thông báo mời họp [tên cuộc họp] vào lúc [giờ] ngày [ngày] tại [địa điểm]. Thành phần mời: [danh sách].'},
+      {label:'Tờ trình xin chủ trương',text:'Soạn tờ trình xin chủ trương về việc [nội dung]. Căn cứ pháp lý: [nêu căn cứ]. Nguồn kinh phí: [nguồn].'},
+      {label:'Quyết định phân công',text:'Soạn quyết định phân công [chức danh] phụ trách [công việc/lĩnh vực] kể từ ngày [ngày].'},
+      {label:'Kế hoạch thực hiện',text:'Soạn kế hoạch thực hiện [tên kế hoạch/nhiệm vụ] năm [năm]. Mục tiêu: [nêu mục tiêu].'},
+    ],
+    summary:[
+      {label:'Tóm tắt ngắn',text:'Tóm tắt nội dung chính của văn bản đính kèm trong 3-5 điểm ngắn gọn.'},
+      {label:'Tóm tắt nhiệm vụ',text:'Từ văn bản đính kèm, liệt kê các nhiệm vụ UBND xã phải thực hiện, thời hạn và đơn vị chủ trì.'},
+      {label:'Trích yếu nội dung',text:'Viết trích yếu nội dung văn bản đính kèm không quá 2 câu.'},
+      {label:'Tóm tắt để báo cáo',text:'Tóm tắt văn bản đính kèm để tôi báo cáo lại cho lãnh đạo UBND xã nắm bắt.'},
+    ],
+    legal:[
+      {label:'Căn cứ ban hành',text:'Tra cứu các căn cứ pháp lý để ban hành [loại văn bản] về [nội dung/lĩnh vực].'},
+      {label:'Văn bản về đất đai',text:'Tra cứu các quy định pháp luật hiện hành về [vấn đề đất đai cụ thể].'},
+      {label:'Chính sách hỗ trợ',text:'Tra cứu các chính sách hỗ trợ hiện hành về [đối tượng/lĩnh vực] áp dụng tại cấp xã.'},
+      {label:'Thẩm quyền xã',text:'UBND xã có thẩm quyền gì trong việc [nêu vấn đề]? Căn cứ pháp lý nào?'},
+    ],
+    procedure:[
+      {label:'Thủ tục cấp phép xây dựng',text:'Thủ tục xin cấp phép xây dựng nhà ở nông thôn tại cấp xã gồm những bước gì? Hồ sơ cần những gì?'},
+      {label:'Thủ tục hộ tịch',text:'Thủ tục [đăng ký khai sinh/khai tử/kết hôn] tại cấp xã gồm những giấy tờ gì? Thời gian giải quyết bao lâu?'},
+      {label:'Thủ tục xác nhận',text:'Thủ tục xin xác nhận [loại giấy tờ] tại UBND xã cần những gì?'},
+      {label:'Thủ tục đất đai',text:'Thủ tục [chuyển nhượng/tặng cho/thừa kế] quyền sử dụng đất tại cấp xã theo quy định hiện hành.'},
+    ],
+    convert:[
+      {label:'Chuyển ghi chú → Công văn',text:'Chuyển nội dung ghi chú sau thành công văn hành chính chuẩn: [dán ghi chú vào đây]'},
+      {label:'Chuyển ý kiến → Văn bản',text:'Tôi muốn [nêu ý định bằng văn nói]. Hãy chuyển thành văn bản hành chính chính thức.'},
+      {label:'Chuẩn hóa diễn đạt',text:'Chuẩn hóa cách diễn đạt đoạn văn sau cho đúng văn phong hành chính: [dán đoạn văn vào đây]'},
+    ],
+    translate:[
+      {label:'Dịch văn bản đính kèm',text:'Dịch toàn bộ nội dung văn bản đính kèm sang tiếng Anh, giữ nguyên bố cục.'},
+      {label:'Dịch tiêu đề & trích yếu',text:'Dịch tiêu đề và trích yếu nội dung của văn bản đính kèm sang tiếng Anh.'},
+      {label:'Dịch Anh → Việt',text:'Dịch nội dung văn bản đính kèm từ tiếng Anh sang tiếng Việt, phong cách hành chính.'},
+    ],
+    meeting:[
+      {label:'Họp triển khai nhiệm vụ',text:'Cuộc họp triển khai [nhiệm vụ/kế hoạch], ngày [ngày], chủ trì: [chức danh], địa điểm: [nơi họp]. Thành phần: [danh sách]. Nội dung chính: [tóm tắt].'},
+      {label:'Họp xét duyệt',text:'Cuộc họp xét duyệt [nội dung xét duyệt], ngày [ngày], chủ trì: [chức danh]. Kết luận: [nêu kết luận chính].'},
+      {label:'Họp từ file ghi chú',text:'Soạn biên bản từ nội dung file đính kèm. Điền đầy đủ các mục còn thiếu theo mẫu biên bản chuẩn.'},
+    ],
+  };
+
   document.getElementById('toolWS').innerHTML=`
     <div class="ws">
       <div class="ws-head">
@@ -1028,17 +1078,26 @@ function openTool(t){
           ondrop="onDrop(event,'${t}')">
           <input type="file" accept=".pdf,.docx,.doc,.txt" onchange="onFileChange(event,'${t}')">
           <div class="uz-icon">📂</div>
-          <div class="uz-title">Kéo thả hoặc click để upload file</div>
-          <div class="uz-sub">Hỗ trợ đọc nội dung tự động</div>
+          <div class="uz-title">Kéo thả hoặc click để upload file tham chiếu</div>
+          <div class="uz-sub">AI sẽ đọc file này làm tài liệu tham chiếu</div>
           <div class="uz-types">
             <span class="uz-type pdf">PDF</span>
             <span class="uz-type docx">DOCX</span>
             <span class="uz-type txt">TXT</span>
           </div>
         </div>
-        <div class="or-div">hoặc nhập trực tiếp</div>
-        <label class="lbl">Nội dung / Yêu cầu</label>
+
+        <!-- PROMPT MẪU -->
+        <div style="margin:14px 0 10px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">⚡ Prompt mẫu — bấm để dùng nhanh</div>
+          <div style="display:flex;flex-wrap:wrap;gap:7px">
+            ${(PROMPTS[t]||[]).map(p=>`<button onclick="usePrompt('${t}',${JSON.stringify(p.text).replace(/'/g,"\\'")})" style="background:var(--bg4);border:1px solid var(--border2);color:var(--muted);padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;transition:all .18s" onmouseover="this.style.borderColor='var(--blue)';this.style.color='var(--blue)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--muted)'">${p.label}</button>`).join('')}
+          </div>
+        </div>
+
+        <label class="lbl">✏️ Nhập yêu cầu của bạn</label>
         <textarea class="textarea" id="tx-${t}" placeholder="${cfg.ph}" oninput="checkEnable('${t}')"></textarea>
+        <div style="font-size:11px;color:var(--muted);margin-top:5px">💡 Nếu đã upload file, AI sẽ tự đọc file đó làm tài liệu tham chiếu cho yêu cầu bên trên</div>
         <div class="arow">
           ${cfg.extra}
           <button class="btn btn-primary" id="runBtn-${t}" onclick="run('${t}')" disabled>
@@ -1079,10 +1138,9 @@ async function processFile(file,t){
     else text=await readDocx(file);
     if(!text.trim()) throw new Error('Không đọc được nội dung. Thử chuyển sang TXT.');
     toolTexts[t]=text;
-    document.getElementById('tx-'+t).value=text;
-    document.getElementById('tx-'+t).classList.add('has-content');
-    setES(t,'done','✅ Đã đọc '+text.length.toLocaleString()+' ký tự từ: '+file.name);
-    checkEnable(t);toast('✅ Đã đọc file thành công','success');
+    // KHÔNG điền vào textarea — để công chức tự nhập yêu cầu
+    setES(t,'done','✅ Đã đọc '+text.length.toLocaleString()+' ký tự · File sẵn sàng làm tài liệu tham chiếu');
+    checkEnable(t);toast('✅ Đã đọc file — hãy nhập yêu cầu bên dưới','success');
   }catch(e){setES(t,'err','❌ '+e.message);toast('❌ '+e.message,'error')}
 }
 
@@ -1101,7 +1159,10 @@ function setES(t,type,msg){
   const ico=type==='loading'?'<div class="spin"></div>':type==='done'?'<span>✅</span>':'<span>❌</span>';
   el.innerHTML=ico+`<span>${msg}</span>`;
 }
-function checkEnable(t){
+function usePrompt(t,text){
+  const ta=document.getElementById('tx-'+t);
+  if(ta){ta.value=text;ta.focus();checkEnable(t);toast('✅ Đã điền prompt mẫu — chỉnh sửa rồi bấm Xử lý!','success')}
+}
   const has=(document.getElementById('tx-'+t)?.value||'').trim().length>0;
   const btn=document.getElementById('runBtn-'+t);
   if(btn)btn.disabled=!has;
@@ -1237,8 +1298,10 @@ Trả lời bằng tiếng Việt, chuyên nghiệp, chuẩn xác. Không bịa 
 // ── RUN ──
 async function run(t){
   if(!checkUsage()) return;
-  const tx=(document.getElementById('tx-'+t)?.value||'').trim();
-  if(!tx){toast('⚠️ Chưa có nội dung','error');return}
+  const req=(document.getElementById('tx-'+t)?.value||'').trim();
+  if(!req){toast('⚠️ Vui lòng nhập yêu cầu','error');return}
+  const fileContent=toolTexts[t]||'';
+  const context=fileContent?`\n\n[TÀI LIỆU ĐÍNH KÈM]\n---\n${fileContent.slice(0,8000)}${fileContent.length>8000?'\n...(còn tiếp)':''}\n---`:'';
   const sel=id=>document.getElementById(id)?.value||'';
   const tn={'cong-van':'Công văn','to-trinh':'Tờ trình','quyet-dinh':'Quyết định','thong-bao':'Thông báo','bao-cao':'Báo cáo','ke-hoach':'Kế hoạch','bien-ban':'Biên bản'};
   const rm={full:'toàn diện (chính tả, thể thức NĐ30, nội dung)',spelling:'chính tả',format:'thể thức NĐ30',content:'nội dung câu từ'};
@@ -1246,14 +1309,14 @@ async function run(t){
   const cm={'hanh-chinh':'văn bản hành chính','bao-cao':'báo cáo','kien-nghi':'kiến nghị'};
   const tr={'vi-en':'Việt→Anh','en-vi':'Anh→Việt'};
   const P={
-    review:`Rà soát ${rm[sel('sel-review')]||'toàn diện'} văn bản sau. Chỉ từng lỗi, vị trí, đề xuất sửa. Nhận xét tổng thể:\n\n---\n${tx}\n---`,
-    draft:`Soạn ${tn[sel('sel-draft')]||'văn bản'} của UBND xã Krông Búk, tỉnh Đắk Lắk theo Nghị định 30/2020. Yêu cầu/mẫu:\n\n---\n${tx}\n---`,
-    summary:`Tóm tắt ${sm[sel('sel-summary')]||'3-5 điểm'} văn bản:\n\n---\n${tx}\n---`,
-    legal:`Tra cứu căn cứ pháp lý (luật, nghị định, thông tư) liên quan vấn đề trong văn bản sau:\n\n---\n${tx}\n---`,
-    procedure:`Trả lời về thủ tục hành chính cấp xã: "${tx}". Nêu: hồ sơ, trình tự, thời gian, lệ phí.`,
-    convert:`Chuyển sang ${cm[sel('sel-convert')]||'văn bản hành chính'} của UBND xã Krông Búk, tỉnh Đắk Lắk:\n\n---\n${tx}\n---`,
-    translate:`Dịch ${tr[sel('sel-translate')]||'sang tiếng Anh'}, phong cách trang trọng:\n\n---\n${tx}\n---`,
-    meeting:`Soạn biên bản họp UBND xã Krông Búk, tỉnh Đắk Lắk từ ghi chú:\n\n---\n${tx}\n---\nCần đầy đủ: thành phần, nội dung, kết luận, phân công, ký xác nhận.`
+    review:`Rà soát ${rm[sel('sel-review')]||'toàn diện'} văn bản sau. Chỉ từng lỗi, vị trí, đề xuất sửa. Nhận xét tổng thể:${context}\n\nYêu cầu thêm của công chức: ${req}`,
+    draft:`Soạn ${tn[sel('sel-draft')]||'văn bản'} của UBND xã Krông Búk, tỉnh Đắk Lắk theo Nghị định 30/2020.${context}\n\nYêu cầu: ${req}`,
+    summary:`Tóm tắt ${sm[sel('sel-summary')]||'3-5 điểm'}.${context}\n\nYêu cầu: ${req}`,
+    legal:`Tra cứu căn cứ pháp lý (luật, nghị định, thông tư).${context}\n\nVấn đề cần tra cứu: ${req}`,
+    procedure:`Trả lời về thủ tục hành chính cấp xã. Nêu: hồ sơ, trình tự, thời gian, lệ phí.${context}\n\nCâu hỏi: ${req}`,
+    convert:`Chuyển sang ${cm[sel('sel-convert')]||'văn bản hành chính'} của UBND xã Krông Búk, tỉnh Đắk Lắk.${context}\n\nNội dung cần chuyển: ${req}`,
+    translate:`Dịch ${tr[sel('sel-translate')]||'sang tiếng Anh'}, phong cách trang trọng.${context}\n\nNội dung cần dịch: ${req}`,
+    meeting:`Soạn biên bản họp UBND xã Krông Búk, tỉnh Đắk Lắk. Cần đầy đủ: thành phần, nội dung, kết luận, phân công, ký xác nhận.${context}\n\nGhi chú họp: ${req}`
   };
   const rb=document.getElementById('rb-'+t),rt=document.getElementById('rt-'+t);
   rb.classList.add('show');
