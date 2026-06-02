@@ -591,6 +591,9 @@ select:focus{border-color:var(--blue)}
     <button class="sb-item" onclick="openTool('meeting')" data-tool="meeting">
       <span class="si-icon">📅</span> Biên bản họp
     </button>
+    <button class="sb-item" onclick="showPage('llct')" data-page="llct" style="color:#f87171">
+      <span class="si-icon">🎓</span> Lý luận chính trị
+    </button>
 
     <div class="sb-divider"></div>
     <div class="sb-section">Hệ thống</div>
@@ -961,8 +964,103 @@ select:focus{border-color:var(--blue)}
     </div>
   </div>
 
-  <!-- HISTORY PAGE -->
-  <div class="page" id="page-history">
+  <!-- LLCT PAGE -->
+  <div class="page" id="page-llct">
+
+    <!-- Banner cảnh báo -->
+    <div style="background:linear-gradient(135deg,#d4a017,#f59e0b);border-radius:12px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:20px;flex-shrink:0">⚠️</span>
+      <p style="font-size:13px;font-weight:600;color:#1a1a00;line-height:1.5">
+        Nội dung AI chỉ mang tính tham khảo. <strong>Hãy đối chiếu với giáo trình gốc</strong> của Học viện Chính trị Quốc gia Hồ Chí Minh (bộ 2021) trước khi thi!
+      </p>
+    </div>
+
+    <!-- Hero -->
+    <div style="background:linear-gradient(135deg,#c0392b 0%,#922b21 100%);border-radius:16px;padding:22px 24px;margin-bottom:20px;position:relative;overflow:hidden">
+      <div style="position:absolute;right:-20px;top:-20px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.05)"></div>
+      <div style="position:absolute;right:50px;bottom:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
+      <div style="position:relative;z-index:1">
+        <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,200,100,.8);margin-bottom:8px">🎓 ỨNG DỤNG HỌC TẬP</div>
+        <h2 style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#fff;margin-bottom:6px">Trung cấp Lý luận Chính trị</h2>
+        <p style="font-size:13px;color:rgba(255,255,255,.6)">Hỏi đáp AI · Luyện thi trắc nghiệm · Theo giáo trình HVCTQG Hồ Chí Minh 2021</p>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:8px;margin-bottom:20px;background:var(--bg3);border-radius:12px;padding:6px">
+      <button id="llctTab1" onclick="llctSwitchTab(1)" style="flex:1;padding:10px;border-radius:8px;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:#c0392b;color:#fff;transition:all .2s">💬 Hỏi đáp AI</button>
+      <button id="llctTab2" onclick="llctSwitchTab(2)" style="flex:1;padding:10px;border-radius:8px;border:none;font-family:'Be Vietnam Pro',sans-serif;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:var(--muted);transition:all .2s">📝 Luyện thi</button>
+    </div>
+
+    <!-- TAB 1: HỎI ĐÁP -->
+    <div id="llctPanel1">
+      <!-- Module selector -->
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px">Chọn module</label>
+        <select id="llctModule" style="width:100%;padding:10px 13px;background:var(--bg4);border:1px solid var(--border2);border-radius:10px;font-size:13px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);outline:none">
+          <option value="mac-lenin">📚 Chủ nghĩa Mác-Lênin</option>
+          <option value="tu-tuong-hcm">🌟 Tư tưởng Hồ Chí Minh</option>
+          <option value="duong-loi">🚩 Đường lối Đảng CSVN</option>
+          <option value="nha-nuoc">⚖️ Nhà nước & Pháp luật</option>
+          <option value="xay-dung-dang">🏛️ Xây dựng Đảng</option>
+        </select>
+      </div>
+
+      <!-- Chat area -->
+      <div id="llctChatBox" style="background:var(--bg3);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px">
+        <div id="llctMessages" style="min-height:200px;max-height:420px;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+          <div style="background:rgba(192,57,43,.12);border:1px solid rgba(192,57,43,.25);border-radius:10px;padding:13px 15px;font-size:13px;color:var(--text);line-height:1.7">
+            <strong style="color:#f87171">👋 Xin chào!</strong> Tao là AI học cùng mày môn <strong>Trung cấp Lý luận Chính trị</strong>. Cứ hỏi thoải mái — tao sẽ giải thích dân dã, ví dụ đời thường, bám sát giáo trình HVCTQG 2021. Nếu không chắc tao sẽ nói thẳng!
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--border);padding:12px;display:flex;gap:8px;align-items:flex-end">
+          <textarea id="llctInput" placeholder="Hỏi gì cũng được... VD: Vật chất là gì? Tại sao phải học Mác-Lênin?..." style="flex:1;background:var(--bg4);border:1px solid var(--border2);border-radius:10px;padding:10px 13px;font-size:13px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);outline:none;resize:none;min-height:42px;max-height:100px;line-height:1.5" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();llctSendChat()}"></textarea>
+          <button onclick="llctSendChat()" style="background:#c0392b;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif;white-space:nowrap;flex-shrink:0">↑ Gửi</button>
+        </div>
+      </div>
+
+      <!-- Quick questions -->
+      <div style="margin-bottom:8px">
+        <div style="font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">⚡ Câu hỏi nhanh</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px" id="llctQuickQ"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2: LUYỆN THI -->
+    <div id="llctPanel2" style="display:none">
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:8px">Chọn module luyện thi</label>
+        <select id="llctQuizModule" style="width:100%;padding:10px 13px;background:var(--bg4);border:1px solid var(--border2);border-radius:10px;font-size:13px;font-family:'Be Vietnam Pro',sans-serif;color:var(--text);outline:none">
+          <option value="mac-lenin">📚 Chủ nghĩa Mác-Lênin</option>
+          <option value="tu-tuong-hcm">🌟 Tư tưởng Hồ Chí Minh</option>
+          <option value="duong-loi">🚩 Đường lối Đảng CSVN</option>
+          <option value="nha-nuoc">⚖️ Nhà nước & Pháp luật</option>
+          <option value="xay-dung-dang">🏛️ Xây dựng Đảng</option>
+        </select>
+      </div>
+      <div id="llctQuizArea">
+        <div style="text-align:center;padding:40px 20px">
+          <div style="font-size:48px;margin-bottom:12px">🎯</div>
+          <p style="color:var(--muted);font-size:14px;margin-bottom:20px">Chọn module và bắt đầu luyện thi trắc nghiệm</p>
+          <button onclick="llctStartQuiz()" style="background:#c0392b;color:#fff;border:none;border-radius:10px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Be Vietnam Pro',sans-serif">🎯 Bắt đầu luyện thi</button>
+        </div>
+      </div>
+
+      <!-- Score board -->
+      <div id="llctScore" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:12px;padding:16px;margin-top:14px;text-align:center">
+        <div style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Kết quả phiên này</div>
+        <div style="font-family:'Rajdhani',sans-serif;font-size:36px;font-weight:700;color:#c0392b" id="llctScoreNum">0/0</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px" id="llctScoreMsg"></div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center;padding:16px 0 4px;font-size:12px;color:var(--muted2)">
+      Phát triển bởi <strong style="color:var(--muted)">Trần Văn Tiến</strong> · 0973.141.747
+    </div>
+  </div>
+
+</main>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
       <div>
         <h2 style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:var(--white);margin-bottom:4px">🕐 Lịch sử tra cứu</h2>
@@ -1124,19 +1222,7 @@ async function doLogin(){
   S.set('currentUser',CU);closeAuth();updateUI();
   toast('✅ Chào '+CU.username,'success');
   // Tự động lấy TẤT CẢ API Key từ Sheet về thiết bị này
-  const kr=await gsCall({action:'getApiKey'});
-  if(kr.ok){
-    if(kr.keys&&kr.keys.length){
-      // Lấy được mảng key mới
-      saveKeys(kr.keys);
-      toast('🔑 Đã tải '+kr.keys.length+' API Key tự động!','success');
-    } else if(kr.apiKey){
-      // Fallback key đơn cũ
-      saveKeys([{key:kr.apiKey,uses:0,blocked:false}]);
-      toast('🔑 Đã tải API Key tự động!','success');
-    }
-    if(kr.model) localStorage.setItem('geminiModel',kr.model);
-  }
+  syncKeysFromSheet();
 }
 function handleLogout(){CU=null;S.del('currentUser');updateUI();toast('👋 Đã đăng xuất','success');showPage('home')}
 
@@ -1211,7 +1297,7 @@ function toggleSidebar(){const sb=document.getElementById('sidebar');const ov=do
 function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sbOverlay').classList.remove('show')}
 
 // ── PAGES ──
-const pageTitles={home:'Tổng quan',tools:'Công cụ AI',admin:'Quản trị',settings:'Cài đặt',principles:'Nguyên tắc sử dụng AI',history:'Lịch sử tra cứu'};
+const pageTitles={home:'Tổng quan',tools:'Công cụ AI',admin:'Quản trị',settings:'Cài đặt',principles:'Nguyên tắc sử dụng AI',history:'Lịch sử tra cứu',llct:'🎓 Lý luận Chính trị'};
 function showPage(n){
   if(n==='settings'){showSettings();return}
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
@@ -1223,6 +1309,7 @@ function showPage(n){
   if(n==='admin')updateAdmin();
   if(n==='home')updateStats();
   if(n==='history')showHistory();
+  if(n==='llct')initLLCT();
 }
 
 // ── TOOL CONFIG ──
@@ -1522,16 +1609,29 @@ async function gemini(prompt, fileBase64, mimeType){
       return result;
     }catch(e){
       lastError=e.message;
-      if(e.message.includes('quota')||e.message.includes('RESOURCE_EXHAUSTED')||e.message.includes('429')){
+      if(e.message.includes('quota')||e.message.includes('RESOURCE_EXHAUSTED')||e.message.includes('limit: 0')){
+        // Hết quota ngày → block key, chuyển key khác
         markKeyQuota(keyObj.key);
         renderKeyList();
-        toast('⚠️ Key '+sortedKeys.indexOf(keyObj+1)+' hết quota, chuyển key tiếp theo...','error');
         continue;
       }
-      throw e;// Lỗi khác thì throw luôn
+      if(e.message.includes('limit: 20')||e.message.includes('429')||e.message.includes('rate')){
+        // Rate limit phút → chờ 20 giây rồi thử lại key này
+        toast('⏳ Chờ 20 giây do rate limit...','error');
+        await new Promise(r=>setTimeout(r,20000));
+        try{
+          const result=await callGeminiAPI(keyObj.key, prompt, fileBase64, mimeType);
+          incrementKeyUse(keyObj.key);
+          return result;
+        }catch(e2){
+          lastError=e2.message;
+          continue;
+        }
+      }
+      throw e;
     }
   }
-  throw new Error('Tất cả key đều hết quota! '+lastError);
+  throw new Error('Tất cả key đều hết quota! Vui lòng thử lại sau ít phút hoặc liên hệ admin.');
 }
 
 async function callGeminiAPI(key, prompt, fileBase64, mimeType){
@@ -1722,7 +1822,31 @@ async function delUser(username){
 }
 
 // ── SETTINGS ──
-// ── MULTI-KEY SYSTEM ──
+// ── ĐỒNG BỘ KEY TỪ SHEET ──
+async function syncKeysFromSheet(){
+  try{
+    const kr=await gsCall({action:'getApiKey'});
+    if(!kr.ok) return;
+    const localKeys=getKeys().filter(k=>k.key);
+    if(kr.keys&&kr.keys.length){
+      // Chỉ cập nhật nếu Sheet có nhiều key hơn local
+      if(kr.keys.length>localKeys.length){
+        // Giữ lại trạng thái blocked/uses của key đã có
+        const merged=kr.keys.map(sk=>{
+          const existing=localKeys.find(lk=>lk.key===sk.key);
+          return existing||{...sk,uses:sk.uses||0,blocked:false};
+        });
+        saveKeys(merged);
+        toast('🔑 Đã đồng bộ '+merged.length+' key từ Sheet!','success');
+      }
+    } else if(kr.apiKey){
+      if(!localKeys.length){
+        saveKeys([{key:kr.apiKey,uses:0,blocked:false}]);
+      }
+    }
+    if(kr.model) localStorage.setItem('geminiModel',kr.model);
+  }catch(e){}
+}
 const MAX_KEYS=15;
 const KEYS_STORAGE='geminiKeys';
 
@@ -2252,10 +2376,268 @@ async function sendChat(t){
   }
 }
 
-// ── PAGENAMES UPDATE ──
-const pageTitlesExtra={history:'Lịch sử tra cứu'};
+// ══════════════════════════════════════════
+// 🎓 LÝ LUẬN CHÍNH TRỊ MODULE
+// ══════════════════════════════════════════
+const LLCT_GS='https://script.google.com/macros/s/AKfycbyEduuoT_jlFIG6lzwny6IU44jN9Rz5K6LRq9wxb0gKujtXKpmZBuizTSiDF-89kdxe/exec';
 
-// ── BOOT ──
+const LLCT_MODULES={
+  'mac-lenin':'Chủ nghĩa Mác-Lênin',
+  'tu-tuong-hcm':'Tư tưởng Hồ Chí Minh',
+  'duong-loi':'Đường lối Đảng CSVN',
+  'nha-nuoc':'Nhà nước & Pháp luật',
+  'xay-dung-dang':'Xây dựng Đảng'
+};
+
+const LLCT_QUICK={
+  'mac-leben':['Vật chất là gì?','Ý thức là gì?','Quy luật mâu thuẫn','Biện chứng duy vật là gì?'],
+  'mac-lenin':['Vật chất là gì?','Ý thức là gì?','Quy luật mâu thuẫn','Biện chứng duy vật là gì?','Đấu tranh giai cấp','Chủ nghĩa xã hội khoa học'],
+  'tu-tuong-hcm':['Tư tưởng HCM về Đảng','Đại đoàn kết dân tộc','Nhà nước của dân','Đạo đức cách mạng','Văn hóa theo HCM'],
+  'duong-loi':['Đường lối đổi mới 1986','Kinh tế thị trường định hướng XHCN','Hội nhập quốc tế','Công nghiệp hóa hiện đại hóa','Quốc phòng an ninh'],
+  'nha-nuoc':['Nhà nước pháp quyền XHCN','Hệ thống pháp luật VN','Quyền công dân','Bộ máy nhà nước','Hiến pháp 2013'],
+  'xay-dung-dang':['Nguyên tắc tập trung dân chủ','Tự phê bình và phê bình','Kỷ luật Đảng','Công tác cán bộ','Phòng chống tham nhũng']
+};
+
+let llctChatHistory=[];
+let llctQuizState={score:0,total:0,current:null,answered:false};
+
+// ── SWITCH TAB ──
+function llctSwitchTab(tab){
+  document.getElementById('llctPanel1').style.display=tab===1?'':'none';
+  document.getElementById('llctPanel2').style.display=tab===2?'':'none';
+  const btn1=document.getElementById('llctTab1');
+  const btn2=document.getElementById('llctTab2');
+  btn1.style.background=tab===1?'#c0392b':'transparent';
+  btn1.style.color=tab===1?'#fff':'var(--muted)';
+  btn2.style.background=tab===2?'#c0392b':'transparent';
+  btn2.style.color=tab===2?'#fff':'var(--muted)';
+}
+
+// ── RENDER QUICK QUESTIONS ──
+function llctRenderQuick(){
+  const mod=document.getElementById('llctModule')?.value||'mac-leiden';
+  const qs=LLCT_QUICK[mod]||LLCT_QUICK['mac-leiden']||[];
+  const el=document.getElementById('llctQuickQ');
+  if(!el) return;
+  el.innerHTML='';
+  qs.forEach(q=>{
+    const btn=document.createElement('button');
+    btn.textContent=q;
+    btn.style.cssText='background:var(--bg4);border:1px solid var(--border2);color:var(--muted);padding:5px 11px;border-radius:16px;font-size:11px;cursor:pointer;font-family:\'Be Vietnam Pro\',sans-serif;transition:all .18s';
+    btn.onmouseover=function(){this.style.borderColor='#c0392b';this.style.color='#f87171'};
+    btn.onmouseout=function(){this.style.borderColor='var(--border2)';this.style.color='var(--muted)'};
+    btn.onclick=()=>{
+      const inp=document.getElementById('llctInput');
+      if(inp){inp.value=q;inp.focus()}
+    };
+    el.appendChild(btn);
+  });
+}
+
+// ── SEND CHAT ──
+async function llctSendChat(){
+  const inp=document.getElementById('llctInput');
+  const msg=(inp?.value||'').trim();
+  if(!msg) return;
+  inp.value='';
+
+  const mod=document.getElementById('llctModule')?.value||'mac-leiden';
+  const modName=LLCT_MODULES[mod]||'Lý luận chính trị';
+  const msgs=document.getElementById('llctMessages');
+  if(!msgs) return;
+
+  // Hiện message user
+  const userDiv=document.createElement('div');
+  userDiv.style.cssText='background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:10px 14px;font-size:13px;color:var(--white);align-self:flex-end;margin-left:20px;line-height:1.6';
+  userDiv.textContent=msg;
+  msgs.appendChild(userDiv);
+
+  // Loading
+  const loadDiv=document.createElement('div');
+  loadDiv.style.cssText='background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.15);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px';
+  loadDiv.innerHTML='<div class="spin" style="width:13px;height:13px;border:2px solid rgba(192,57,43,.3);border-top-color:#c0392b;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0"></div><span id="llctLoadSt">Đang tra cứu giáo trình...</span>';
+  msgs.appendChild(loadDiv);
+  msgs.scrollTop=msgs.scrollHeight;
+
+  const stEl=document.getElementById('llctLoadSt');
+  const sts=['Đang tra cứu giáo trình...','Đang phân tích nội dung...','Đang soạn câu trả lời dễ hiểu...'];
+  let si=0;
+  const stInt=setInterval(()=>{si=(si+1)%sts.length;if(stEl)stEl.textContent=sts[si]},1500);
+
+  llctChatHistory.push({role:'user',content:msg});
+
+  const SYS=`Bạn là người bạn thân giúp học viên ôn tập môn Trung cấp Lý luận Chính trị theo giáo trình của Học viện Chính trị Quốc gia Hồ Chí Minh, bộ năm 2021.
+
+CÁCH GIẢI THÍCH:
+- Dùng ngôn ngữ dân dã, gần gũi như đang nói chuyện với bạn bè
+- Luôn có ví dụ đời thường, thực tế để minh họa
+- Bám sát nội dung giáo trình HVCTQG 2021
+- Nếu KHÔNG CHẮC về thông tin nào, PHẢI nói rõ: "Tao không chắc về điểm này, mày nên kiểm tra lại giáo trình"
+- Không bịa đặt thông tin
+- Trả lời ngắn gọn, súc tích, dễ nhớ
+- Khi cần liệt kê thì dùng số thứ tự hoặc gạch đầu dòng
+
+Module đang học: ${modName}
+Lịch sử hội thoại: ${llctChatHistory.slice(-4).map(m=>m.role==='user'?'Học viên: '+m.content:'AI: '+m.content).join('\n')}`;
+
+  try{
+    const res=await gemini(SYS+'\n\nCâu hỏi: '+msg);
+    clearInterval(stInt);
+    loadDiv.remove();
+    llctChatHistory.push({role:'ai',content:res||''});
+
+    const aiDiv=document.createElement('div');
+    aiDiv.style.cssText='background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.2);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--text);line-height:1.8';
+    aiDiv.innerHTML=renderMD(res||'');
+    msgs.appendChild(aiDiv);
+    msgs.scrollTop=msgs.scrollHeight;
+
+    // Lưu lên Sheet riêng
+    llctSaveToSheet(modName, msg, res||'');
+  }catch(e){
+    clearInterval(stInt);
+    loadDiv.innerHTML='<span style="color:var(--red)">❌ Lỗi: '+e.message+'</span>';
+  }
+}
+
+// ── SAVE TO LLCT SHEET ──
+async function llctSaveToSheet(module, question, answer){
+  try{
+    await fetch(LLCT_GS,{
+      method:'POST',
+      body:JSON.stringify({
+        action:'saveHistory',
+        time:new Date().toLocaleString('vi-VN'),
+        module,
+        question:question.slice(0,500),
+        answer:answer.slice(0,1500),
+        username:CU?.username||'Khách'
+      })
+    });
+  }catch(e){}
+}
+
+// ── QUIZ ──
+async function llctStartQuiz(){
+  const mod=document.getElementById('llctQuizModule')?.value||'mac-leiden';
+  const modName=LLCT_MODULES[mod]||'Lý luận chính trị';
+  const area=document.getElementById('llctQuizArea');
+  if(!area) return;
+
+  area.innerHTML='<div style="text-align:center;padding:30px;color:var(--muted)"><div class="spin-lg" style="margin:0 auto 12px"></div>AI đang tạo câu hỏi...</div>';
+
+  const prompt=`Tạo 1 câu hỏi trắc nghiệm về môn "${modName}" theo giáo trình Trung cấp Lý luận Chính trị của HVCTQG Hồ Chí Minh 2021.
+
+Trả lời ĐÚNG theo định dạng JSON sau (chỉ JSON, không thêm gì khác):
+{
+  "question": "Nội dung câu hỏi",
+  "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+  "answer": "A",
+  "explain": "Giải thích ngắn gọn tại sao đáp án đúng"
+}`;
+
+  try{
+    const res=await gemini(prompt);
+    const clean=res.replace(/```json|```/g,'').trim();
+    const quiz=JSON.parse(clean);
+    llctQuizState.current=quiz;
+    llctQuizState.answered=false;
+    llctRenderQuiz(quiz, modName);
+  }catch(e){
+    area.innerHTML='<div style="color:var(--red);padding:20px;text-align:center">❌ Không tạo được câu hỏi. Thử lại!</div>'+
+      '<div style="text-align:center;margin-top:12px"><button onclick="llctStartQuiz()" style="background:#c0392b;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'Be Vietnam Pro\',sans-serif">🔄 Thử lại</button></div>';
+  }
+}
+
+function llctRenderQuiz(quiz, modName){
+  const area=document.getElementById('llctQuizArea');
+  if(!area) return;
+
+  const optLetters=['A','B','C','D'];
+  let optsHtml='';
+  quiz.options.forEach((opt,i)=>{
+    optsHtml+=
+      '<button onclick="llctAnswer(\''+optLetters[i]+'\')" id="llctOpt'+optLetters[i]+'" '+
+        'style="width:100%;text-align:left;padding:12px 16px;border-radius:10px;border:1.5px solid var(--border2);background:var(--bg4);color:var(--text);font-size:13px;cursor:pointer;font-family:\'Be Vietnam Pro\',sans-serif;margin-bottom:8px;transition:all .2s;line-height:1.5">'+
+        escHtml(opt)+
+      '</button>';
+  });
+
+  area.innerHTML=
+    '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:13px;overflow:hidden">'+
+      '<div style="background:rgba(192,57,43,.1);padding:10px 16px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#f87171">'+
+        '📝 '+escHtml(modName)+' · Câu '+llctQuizState.total+1+
+      '</div>'+
+      '<div style="padding:16px">'+
+        '<div style="font-size:14px;font-weight:600;color:var(--white);line-height:1.6;margin-bottom:16px">'+escHtml(quiz.question)+'</div>'+
+        '<div id="llctOptions">'+optsHtml+'</div>'+
+        '<div id="llctExplain" style="display:none"></div>'+
+        '<div id="llctNextBtn" style="display:none;margin-top:14px;text-align:center">'+
+          '<button onclick="llctStartQuiz()" style="background:#c0392b;color:#fff;border:none;border-radius:10px;padding:10px 24px;font-size:13px;font-weight:600;cursor:pointer;font-family:\'Be Vietnam Pro\',sans-serif">Câu tiếp theo →</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+}
+
+function llctAnswer(chosen){
+  if(llctQuizState.answered) return;
+  llctQuizState.answered=true;
+  const quiz=llctQuizState.current;
+  if(!quiz) return;
+
+  const correct=quiz.answer;
+  const isRight=chosen===correct;
+  llctQuizState.total++;
+  if(isRight) llctQuizState.score++;
+
+  // Tô màu các option
+  ['A','B','C','D'].forEach(l=>{
+    const btn=document.getElementById('llctOpt'+l);
+    if(!btn) return;
+    btn.style.cursor='default';
+    if(l===correct){btn.style.background='rgba(16,185,129,.15)';btn.style.borderColor='var(--green)';btn.style.color='#6ee7b7';}
+    else if(l===chosen&&!isRight){btn.style.background='rgba(229,62,62,.15)';btn.style.borderColor='var(--red)';btn.style.color='#fca5a5';}
+    else{btn.style.opacity='.4';}
+  });
+
+  // Hiện giải thích
+  const expl=document.getElementById('llctExplain');
+  if(expl){
+    expl.style.display='';
+    expl.innerHTML=
+      '<div style="margin-top:14px;padding:13px 16px;border-radius:10px;background:'+(isRight?'rgba(16,185,129,.08)':'rgba(229,62,62,.08)')+';border:1px solid '+(isRight?'rgba(16,185,129,.2)':'rgba(229,62,62,.2)')+'">'+
+        '<div style="font-size:13px;font-weight:700;color:'+(isRight?'var(--green)':'var(--red)')+';margin-bottom:6px">'+(isRight?'✅ Chính xác!':'❌ Sai rồi! Đáp án đúng là '+correct)+'</div>'+
+        '<div style="font-size:12px;color:var(--text);line-height:1.7">'+escHtml(quiz.explain||'')+'</div>'+
+      '</div>';
+  }
+
+  // Hiện nút tiếp theo
+  const next=document.getElementById('llctNextBtn');
+  if(next) next.style.display='';
+
+  // Cập nhật score
+  const scoreEl=document.getElementById('llctScore');
+  const scoreNum=document.getElementById('llctScoreNum');
+  const scoreMsg=document.getElementById('llctScoreMsg');
+  if(scoreEl){scoreEl.style.display='';}
+  if(scoreNum) scoreNum.textContent=llctQuizState.score+'/'+llctQuizState.total;
+  if(scoreMsg){
+    const pct=Math.round(llctQuizState.score/llctQuizState.total*100);
+    scoreMsg.textContent=pct>=80?'🎉 Xuất sắc!':pct>=60?'👍 Khá tốt!':'💪 Cần ôn thêm!';
+  }
+
+  // Lưu lên Sheet
+  const mod=document.getElementById('llctQuizModule')?.value||'';
+  llctSaveToSheet(LLCT_MODULES[mod]||'Quiz', quiz.question, 'Chọn: '+chosen+' | Đúng: '+correct+' | '+quiz.explain);
+}
+
+// ── INIT LLCT PAGE ──
+function initLLCT(){
+  llctRenderQuick();
+  document.getElementById('llctModule')?.addEventListener('change',llctRenderQuick);
+}
+
+// ── PAGENAMES ──
 init();updateUI();
 if(!CU) setTimeout(showAuth,700);
 </script>
